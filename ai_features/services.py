@@ -543,14 +543,35 @@ def classify_folder_photos(folder_id, user_id):
                     code in error_message
                     for code in [
                         "503",
-                        "429",
                         "500",
                         "502",
                         "504",
                         "UNAVAILABLE",
-                        "RESOURCE_EXHAUSTED",
                     ]
                 )
+
+                quota_error = any(
+                    code in error_message
+                    for code in [
+                        "429",
+                        "RESOURCE_EXHAUSTED",
+                        "quota exceeded",
+                        "Quota exceeded",
+                    ]
+                )
+
+                if quota_error:
+                    print(
+                        "Gemini API quota exceeded. "
+                        "Stopping classification."
+                    )
+                    break
+
+                if temporary_error and attempt < 2:
+                    wait_time = 5 * (attempt + 1)
+                    time.sleep(wait_time)
+                else:
+                    break
 
                 if temporary_error and attempt < 2:
 

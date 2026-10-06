@@ -1,7 +1,10 @@
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.views.decorators.http import require_POST
+from django.contrib import messages
+from django.shortcuts import redirect
 
+from .services import classify_folder_photos
 from pizxifyapp.models import (
     PhotoFolder,
     FolderPhoto
@@ -302,3 +305,48 @@ def face_group_photos(request, folder_id, group_id):
         "photographer/face_group_photos.html",
         context
     )
+
+
+
+@require_POST
+def classify_folder_photos_api(request, folder_id):
+
+    if request.session.get("user_role") != "photographer":
+        return redirect("login")
+
+    user_id = request.session.get("user_id")
+
+    try:
+        result = classify_folder_photos(
+            folder_id=folder_id,
+            user_id=user_id
+        )
+
+        if result["classified_count"] > 0:
+            messages.success(
+                request,
+                (
+                    "AI Photo Classification Completed! "
+                    f"Processed: {result['photos_processed']} | "
+                    f"Classified: {result['classified_count']} | "
+                    f"Failed: {result['failed_count']}"
+                )
+            )
+        else:
+            messages.warning(
+                request,
+                "AI Photo Classification could not be completed. "
+                "Please check your Gemini API quota."
+            )
+
+    except ValueError as e:
+        messages.error(request, str(e))
+
+    except Exception as e:
+        print(f"AI photo classification error: {e}")
+        messages.error(
+            request,
+            "AI photo classification failed."
+        )
+
+    return redirect("folder_details", id=folder_id)

@@ -22,4 +22,10 @@ urlpatterns = [
     views.face_group_photos,
     name='face_group_photos'
 ),
+
+path(
+    'classify-photos/<int:folder_id>/',
+    views.classify_folder_photos_api,
+    name='classify_folder_photos'
+),
 ]
