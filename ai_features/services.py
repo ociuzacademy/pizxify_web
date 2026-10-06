@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+import time
 
 def calculate_quality_score(
     sharpness,
@@ -470,6 +470,8 @@ def classify_folder_photos(folder_id, user_id):
     """
     Classify all photos in a folder using Gemini Vision
     and save the results into PhotoClassification.
+
+    Temporary Gemini errors are retried automatically.
     """
 
     folder = PhotoFolder.objects.filter(
@@ -500,32 +502,72 @@ def classify_folder_photos(folder_id, user_id):
 
     for photo in photos:
 
-        try:
+        success = False
 
-            result = classify_image_with_gemini(
-                photo.image.path
-            )
+        for attempt in range(3):
 
-            PhotoClassification.objects.update_or_create(
-                photo=photo,
-                defaults={
-                    "category": result["category"],
-                    "scene": result["scene"],
-                    "photo_type": result["photo_type"],
-                    "description": result["description"],
-                    "confidence": result["confidence"],
-                }
-            )
+            try:
 
-            classified_count += 1
+                result = classify_image_with_gemini(
+                    photo.image.path
+                )
 
-        except Exception as e:
+                PhotoClassification.objects.update_or_create(
+                    photo=photo,
+                    defaults={
+                        "category": result["category"],
+                        "scene": result["scene"],
+                        "photo_type": result["photo_type"],
+                        "description": result["description"],
+                        "confidence": result["confidence"],
+                    }
+                )
 
-            print(
-                f"Photo classification failed "
-                f"for photo {photo.id}: {e}"
-            )
+                classified_count += 1
+                success = True
 
+                break
+
+            except Exception as e:
+
+                error_message = str(e)
+
+                print(
+                    f"Photo classification failed "
+                    f"for photo {photo.id} "
+                    f"(attempt {attempt + 1}/3): "
+                    f"{error_message}"
+                )
+
+                temporary_error = any(
+                    code in error_message
+                    for code in [
+                        "503",
+                        "429",
+                        "500",
+                        "502",
+                        "504",
+                        "UNAVAILABLE",
+                        "RESOURCE_EXHAUSTED",
+                    ]
+                )
+
+                if temporary_error and attempt < 2:
+
+                    wait_time = 5 * (attempt + 1)
+
+                    print(
+                        f"Retrying photo {photo.id} "
+                        f"in {wait_time} seconds..."
+                    )
+
+                    time.sleep(wait_time)
+
+                else:
+
+                    break
+
+        if not success:
             failed_count += 1
 
     return {
