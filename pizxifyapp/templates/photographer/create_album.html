@@ -3,578 +3,2136 @@
 {% block content %}
 
 <div class="create-album-wrapper">
+
     <div class="container-fluid px-4 py-5">
 
-        <!-- ===== HERO / HEADER ===== -->
+        <!-- =========================================================
+             HERO / HEADER
+        ========================================================== -->
+
         <div class="row mb-5">
+
             <div class="col-12">
-                <div class="folder-header d-flex flex-wrap align-items-center justify-content-between bg-folder-cover p-4 p-lg-5 rounded-4 shadow-lg">
+
+                <div
+                    class="folder-header d-flex flex-wrap align-items-center justify-content-between bg-folder-cover p-4 p-lg-5 rounded-4 shadow-lg">
+
                     <div>
-                        <span class="folder-eyebrow"><i class="bi bi-images me-1"></i> Create album</span>
-                        <h1 class="folder-heading mb-2">Create Album</h1>
+
+                        <span class="folder-eyebrow">
+
+                            <i class="bi bi-images me-1"></i>
+
+                            Create album
+
+                        </span>
+
+                        <h1 class="folder-heading mb-2">
+
+                            Create Album
+
+                        </h1>
+
                         <p class="folder-sub mb-0">
-                            Build a beautiful album from your client's liked photos. Select and arrange in the order you want.
+
+                            Build a beautiful album from your client's liked photos.
+                            Select and arrange photos in the order you want.
+
                         </p>
+
                     </div>
+
+
                     <div class="mt-3 mt-sm-0">
+
                         <a href="{% url 'folder_details' folder.id %}" class="btn btn-folder-cta-outline px-5">
-                            <i class="bi bi-arrow-left me-2"></i>Back to Folder
+
+                            <i class="bi bi-arrow-left me-2"></i>
+
+                            Back to Folder
+
                         </a>
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
 
-        <!-- ===== CREATE ALBUM CARD ===== -->
+
+        <!-- =========================================================
+             CREATE ALBUM CARD
+        ========================================================== -->
+
         <div class="row justify-content-center">
+
             <div class="col-lg-11 col-xl-10">
+
                 <div class="album-create-card">
+
                     <div class="card-body p-4 p-lg-5">
 
                         <form method="POST" id="createAlbumForm">
+
                             {% csrf_token %}
 
-                            <!-- ===== ALBUM DETAILS ===== -->
+
+                            <!-- =================================================
+                                 ALBUM DETAILS
+                            ================================================== -->
+
                             <div class="album-details-section mb-4">
+
                                 <div class="d-flex align-items-center gap-2 mb-3">
-                                    <div class="section-icon"><i class="bi bi-info-circle"></i></div>
-                                    <h5 class="section-label mb-0">Album Details</h5>
+
+                                    <div class="section-icon">
+
+                                        <i class="bi bi-info-circle"></i>
+
+                                    </div>
+
+                                    <h5 class="section-label mb-0">
+
+                                        Album Details
+
+                                    </h5>
+
                                 </div>
+
 
                                 <div class="row g-3">
+
+                                    <!-- Album Title -->
+
                                     <div class="col-md-6">
-                                        <label class="folder-field-label"><i class="bi bi-tag me-1"></i>Album Title</label>
-                                        <input type="text"
-                                               name="title"
-                                               class="form-control folder-input"
-                                               placeholder="e.g. Wedding Highlights"
-                                               required>
+
+                                        <label class="folder-field-label">
+
+                                            <i class="bi bi-tag me-1"></i>
+
+                                            Album Title
+
+                                        </label>
+
+                                        <input type="text" name="title" class="form-control folder-input"
+                                            placeholder="e.g. Wedding Highlights" required>
+
                                     </div>
+
+
+                                    <!-- Total Pages -->
+
                                     <div class="col-md-6">
-                                        <label class="folder-field-label"><i class="bi bi-layers me-1"></i>Total Pages</label>
-                                        <input type="number"
-                                               name="total_pages"
-                                               id="totalPages"
-                                               min="1"
-                                               class="form-control folder-input"
-                                               placeholder="Number of pages"
-                                               required>
+
+                                        <label class="folder-field-label">
+
+                                            <i class="bi bi-layers me-1"></i>
+
+                                            Total Pages
+
+                                        </label>
+
+                                        <input type="number" name="total_pages" id="totalPages" min="1"
+                                            class="form-control folder-input" placeholder="Number of pages" required>
+
                                     </div>
+
                                 </div>
+
+
+                                <!-- Description -->
 
                                 <div class="mt-3">
-                                    <label class="folder-field-label"><i class="bi bi-text-paragraph me-1"></i>Description</label>
-                                    <textarea name="description"
-                                              rows="3"
-                                              class="form-control folder-input"
-                                              placeholder="Add a brief description for this album..."></textarea>
+
+                                    <label class="folder-field-label">
+
+                                        <i class="bi bi-text-paragraph me-1"></i>
+
+                                        Description
+
+                                    </label>
+
+                                    <textarea name="description" rows="3" class="form-control folder-input"
+                                        placeholder="Add a brief description for this album..."></textarea>
+
                                 </div>
+
                             </div>
 
-                            <!-- ===== PAGE SETTINGS ===== -->
+
+
+                            <!-- =================================================
+                                 PAGE SETTINGS
+                            ================================================== -->
+
                             <div class="page-settings-section mb-4">
+
                                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="section-icon"><i class="bi bi-layout-three-columns"></i></div>
-                                        <h5 class="section-label mb-0">Page Settings</h5>
+
+                                        <div class="section-icon">
+                                            <i class="bi bi-layout-three-columns"></i>
+                                        </div>
+
+                                        <h5 class="section-label mb-0">
+                                            Page Settings
+                                        </h5>
+
                                     </div>
-                                    <button type="button"
-                                            class="btn btn-generate-pages"
+
+
+                                    <!-- PAGE SETTING BUTTONS -->
+                                    <div class="d-flex flex-wrap gap-2">
+
+                                        <!-- AI SUGGEST LAYOUT -->
+                                        <button type="button" class="btn btn-outline-success"
+                                            onclick="suggestAILayout(this)">
+
+                                            <i class="bi bi-stars me-1"></i>
+
+                                            AI Suggest Layout
+
+                                        </button>
+
+
+                                        <!-- MANUAL GENERATE -->
+                                        <button type="button" class="btn btn-generate-pages"
                                             onclick="generatePageInputs()">
-                                        <i class="bi bi-plus-circle me-1"></i>Generate Page Settings
-                                    </button>
+
+                                            <i class="bi bi-plus-circle me-1"></i>
+
+                                            Generate Page Settings
+
+                                        </button>
+
+                                    </div>
+
                                 </div>
+
+
+                                <!-- Generated page settings appear here -->
                                 <div id="pageSettings" class="page-settings-container"></div>
+
                             </div>
+
 
                             <hr class="my-4" style="border-color: var(--line);">
 
-                            <!-- ===== PHOTO SELECTION ===== -->
+
+
+                            <!-- =================================================
+                                 PHOTO SELECTION
+                            ================================================== -->
+
                             <div class="photo-selection-section">
+
+
+                                <!-- Section Heading -->
+
                                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="section-icon"><i class="bi bi-heart-fill" style="color: var(--coral);"></i></div>
-                                        <h5 class="section-label mb-0">Client Liked Photos</h5>
+
+                                        <div class="section-icon">
+
+                                            <i class="bi bi-stars" style="color: var(--gold);"></i>
+
+                                        </div>
+
+
+                                        <div>
+
+                                            <h5 class="section-label mb-0">
+
+                                                Photo Selection
+
+                                            </h5>
+
+                                            <small class="photo-selection-help">
+
+                                                Choose photos manually or use AI recommendations
+
+                                            </small>
+
+                                        </div>
+
                                     </div>
+
+
+                                    <!-- Selected Count -->
+
                                     <span class="selection-badge">
+
                                         <i class="bi bi-check-circle me-1"></i>
-                                        Selected: <span id="selectedCount">0</span>
+
+                                        Selected:
+
+                                        <span id="selectedCount">0</span>
+
                                     </span>
+
                                 </div>
 
-                                <!-- Photos Grid -->
+
+
+                                <!-- =================================================
+                                     AI SELECTION TOOLBAR
+                                ================================================== -->
+
+                                <div class="ai-selection-toolbar mb-4">
+
+
+                                    <!-- AI Information -->
+
+                                    <div class="ai-selection-info">
+
+                                        <div class="ai-icon">
+
+                                            <i class="bi bi-stars"></i>
+
+                                        </div>
+
+
+                                        <div>
+
+                                            <h6 class="mb-1">
+
+                                                AI-Assisted Photo Selection
+
+                                            </h6>
+
+                                            <p class="mb-0">
+
+                                                AI has identified
+
+                                                <strong>
+
+                                                    {{ recommended_photos|length }}
+
+                                                </strong>
+
+                                                high-quality recommended photos.
+
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+
+
+                                    <!-- AI Actions -->
+
+                                    <div class="ai-selection-actions">
+
+
+                                        <button type="button" class="btn btn-ai-recommended"
+                                            onclick="selectAllRecommended()">
+
+                                            <i class="bi bi-stars me-1"></i>
+
+                                            Select All AI Recommended
+
+                                        </button>
+
+
+                                        <button type="button" class="btn btn-clear-selection"
+                                            onclick="clearSelection()">
+
+                                            <i class="bi bi-x-circle me-1"></i>
+
+                                            Clear Selection
+
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+
+
+                                <!-- =================================================
+                                     PHOTO GRID
+                                ================================================== -->
+
                                 <div class="row g-3" id="photoGrid">
+
+
                                     {% for photo in liked_photos %}
+
+
                                     <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6">
-                                        <div class="photo-select-card"
-                                             data-id="{{ photo.id }}"
-                                             onclick="togglePhoto(this)">
-                                            <div class="selection-order d-none">0</div>
-                                            <img src="{{ photo.image.url }}"
-                                                 class="photo-select-img"
-                                                 alt="Photo">
+
+
+                                        <div class="photo-select-card" data-id="{{ photo.id }}"
+                                            data-recommended="{% if photo.analysis_result and photo.analysis_result.recommendation == 'Recommended' %}true{% else %}false{% endif %}"
+                                            onclick="togglePhoto(this)">
+
+
+                                            <!-- Selection Order -->
+
+                                            <div class="selection-order d-none">
+
+                                                0
+
+                                            </div>
+
+
+
+                                            <!-- Photo -->
+
+                                            <img src="{{ photo.image.url }}" class="photo-select-img" alt="Photo">
+
+
+
+                                            <!-- Selection Overlay -->
+
                                             <div class="photo-select-overlay">
-                                                <span class="photo-select-check"><i class="bi bi-check-lg"></i></span>
+
+                                                <span class="photo-select-check">
+
+                                                    <i class="bi bi-check-lg"></i>
+
+                                                </span>
+
                                             </div>
+
+
+
+                                            <!-- =================================================
+                                                 AI RECOMMENDATION BADGE
+                                            ================================================== -->
+
+                                            {% if photo.analysis_result %}
+
+
+                                            {% if photo.analysis_result.recommendation == "Recommended" %}
+
+
+                                            <div class="ai-photo-badge ai-recommended">
+
+                                                <i class="bi bi-stars"></i>
+
+                                                AI Recommended
+
+                                            </div>
+
+
+                                            {% elif photo.analysis_result.recommendation == "Review" %}
+
+
+                                            <div class="ai-photo-badge ai-review">
+
+                                                <i class="bi bi-eye"></i>
+
+                                                Review
+
+                                            </div>
+
+
+                                            {% elif photo.analysis_result.recommendation == "Needs Review" %}
+
+
+                                            <div class="ai-photo-badge ai-needs-review">
+
+                                                <i class="bi bi-exclamation-triangle"></i>
+
+                                                Needs Review
+
+                                            </div>
+
+
+                                            {% endif %}
+
+
+                                            {% endif %}
+
+
                                         </div>
+
                                     </div>
+
+
                                     {% empty %}
+
+
+                                    <!-- =================================================
+                                         EMPTY STATE
+                                    ================================================== -->
+
                                     <div class="col-12">
+
                                         <div class="folder-empty-state text-center">
+
                                             <div class="mb-4">
+
                                                 <i class="bi bi-heart" style="font-size: 3rem; color: var(--line);"></i>
+
                                             </div>
-                                            <h4 class="folder-empty-title">No liked photos found</h4>
-                                            <p class="folder-meta">Ask your client to like some photos first.</p>
+
+
+                                            <h4 class="folder-empty-title">
+
+                                                No liked photos found
+
+                                            </h4>
+
+
+                                            <p class="folder-meta">
+
+                                                Ask your client to like some photos first.
+
+                                            </p>
+
                                         </div>
+
                                     </div>
+
+
                                     {% endfor %}
+
+
                                 </div>
 
-                                <!-- Hidden input for ordered photo IDs -->
+
+
+                                <!-- =================================================
+                                     HIDDEN INPUT
+                                ================================================== -->
+
                                 <input type="hidden" name="ordered_photo_ids" id="orderedPhotoIds" value="">
 
-                                <!-- Submit -->
-                                <div class="d-flex flex-wrap gap-3 mt-4 pt-3 border-top" style="border-color: var(--line) !important;">
+
+
+                                <!-- =================================================
+                                     SUBMIT BUTTONS
+                                ================================================== -->
+
+                                <div class="d-flex flex-wrap gap-3 mt-4 pt-3 border-top"
+                                    style="border-color: var(--line) !important;">
+
                                     <button type="submit" class="btn btn-folder-cta px-5 py-2">
-                                        <i class="bi bi-images me-2"></i>Create Album
+
+                                        <i class="bi bi-images me-2"></i>
+
+                                        Create Album
+
                                     </button>
-                                    <a href="{% url 'folder_details' folder.id %}" class="btn btn-folder-cta-outline-secondary px-5 py-2">
+
+
+                                    <a href="{% url 'folder_details' folder.id %}"
+                                        class="btn btn-folder-cta-outline-secondary px-5 py-2">
+
                                         Cancel
+
                                     </a>
+
                                 </div>
+
+
                             </div>
+
 
                         </form>
 
                     </div>
+
                 </div>
+
             </div>
+
         </div>
 
-        <!-- ===== FOOTER NOTE ===== -->
+
+
+        <!-- =========================================================
+             FOOTER NOTE
+        ========================================================== -->
+
         <div class="row mt-5">
+
             <div class="col-12 text-center folder-meta">
-                <i class="bi bi-images me-1"></i> Select photos in the order you want them to appear in your album.
+
+                <i class="bi bi-stars me-1"></i>
+
+                AI recommends high-quality photos, but you remain in control
+                of the final album selection.
+
             </div>
+
         </div>
+
 
     </div>
+
 </div>
 
-<!-- ===== STYLES ===== -->
+
+
+<!-- =============================================================
+     STYLES
+============================================================== -->
+
 <style>
+    /* =========================================================
+   MAIN WRAPPER
+========================================================= */
+
     .create-album-wrapper {
+
         background: var(--paper, #F1ECE0);
+
         min-height: 80vh;
-        background-image: radial-gradient(circle at 1px 1px, rgba(34,34,31,.05) 1px, transparent 0);
+
+        background-image:
+            radial-gradient(circle at 1px 1px,
+                rgba(34, 34, 31, .05) 1px,
+                transparent 0);
+
         background-size: 18px 18px;
+
     }
 
-    /* header */
+
+
+    /* =========================================================
+   HEADER
+========================================================= */
+
     .bg-folder-cover {
+
         background: var(--ink, #22221F);
+
         border-radius: 14px;
+
     }
+
 
     .folder-eyebrow {
+
         font-family: 'JetBrains Mono', monospace;
+
         font-size: .72rem;
+
         letter-spacing: .12em;
+
         text-transform: uppercase;
+
         color: var(--gold, #C18B2E);
+
         display: inline-flex;
+
         align-items: center;
+
         margin-bottom: .6rem;
+
     }
+
 
     .folder-heading {
+
         font-family: 'Fraunces', serif;
+
         font-weight: 600;
+
         font-size: clamp(1.9rem, 3vw, 2.5rem);
+
         color: var(--paper, #F1ECE0);
+
         margin: 0;
+
     }
+
 
     .folder-sub {
+
         color: #C8C2B2;
+
         font-size: 1.05rem;
+
         max-width: 480px;
+
     }
+
+
+
+    /* =========================================================
+   PRIMARY BUTTON
+========================================================= */
 
     .btn-folder-cta {
+
         background: var(--coral, #D9512F);
+
         color: #fff;
+
         font-family: 'Inter', sans-serif;
+
         font-weight: 600;
+
         border-radius: 999px;
+
         padding: .7rem 1.8rem;
+
         border: none;
+
         transition: background .2s;
+
     }
-    .btn-folder-cta:hover { background: #bf4324; color: #fff; }
+
+
+    .btn-folder-cta:hover {
+
+        background: #bf4324;
+
+        color: #fff;
+
+    }
+
+
+
+    /* =========================================================
+   HEADER OUTLINE BUTTON
+========================================================= */
 
     .btn-folder-cta-outline {
+
         background: transparent;
+
         color: var(--paper, #F1ECE0);
+
         font-family: 'Inter', sans-serif;
+
         font-weight: 600;
+
         border-radius: 999px;
+
         padding: .7rem 1.8rem;
+
         border: 1.5px solid var(--paper, #F1ECE0);
+
         transition: all .2s;
+
     }
+
+
     .btn-folder-cta-outline:hover {
+
         background: var(--paper, #F1ECE0);
+
         color: var(--ink, #22221F);
+
     }
+
+
+
+    /* =========================================================
+   SECONDARY BUTTON
+========================================================= */
 
     .btn-folder-cta-outline-secondary {
+
         background: transparent;
+
         color: var(--ink-soft, #6B655A);
+
         font-family: 'Inter', sans-serif;
+
         font-weight: 600;
+
         border-radius: 999px;
+
         padding: .7rem 1.8rem;
+
         border: 1.5px solid var(--line, #D6CCB4);
+
         transition: all .2s;
+
     }
+
+
     .btn-folder-cta-outline-secondary:hover {
+
         background: var(--paper-deep, #E7DFCC);
+
         color: var(--ink, #22221F);
+
     }
+
+
+
+    /* =========================================================
+   PAGE SETTINGS BUTTON
+========================================================= */
 
     .btn-generate-pages {
+
         background: var(--paper-deep, #E7DFCC);
+
         color: var(--ink, #22221F);
+
         font-family: 'Inter', sans-serif;
+
         font-weight: 600;
+
         border-radius: 999px;
+
         padding: .5rem 1.5rem;
+
         border: 1px solid var(--line, #D6CCB4);
+
         transition: all .2s;
-    }
-    .btn-generate-pages:hover {
-        background: var(--line, #D6CCB4);
+
     }
 
-    /* main card */
-    .album-create-card {
-        background: #ffffff;
-        border: 1px solid var(--line, #D6CCB4);
-        border-radius: 0 16px 16px 16px;
-        box-shadow: 0 18px 38px -18px rgba(34,34,31,.35);
+
+    .btn-generate-pages:hover {
+
+        background: var(--line, #D6CCB4);
+
     }
+
+
+
+    /* =========================================================
+   MAIN CARD
+========================================================= */
+
+    .album-create-card {
+
+        background: #ffffff;
+
+        border: 1px solid var(--line, #D6CCB4);
+
+        border-radius: 0 16px 16px 16px;
+
+        box-shadow:
+            0 18px 38px -18px rgba(34, 34, 31, .35);
+
+    }
+
+
+
+    /* =========================================================
+   SECTION ICON
+========================================================= */
 
     .section-icon {
+
         width: 32px;
+
         height: 32px;
+
         border-radius: 50%;
+
         background: var(--paper-deep, #E7DFCC);
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         color: var(--ink-soft, #6B655A);
+
         font-size: .9rem;
+
     }
+
+
+
+    /* =========================================================
+   SECTION LABEL
+========================================================= */
 
     .section-label {
+
         font-family: 'Fraunces', serif;
+
         font-weight: 600;
+
         color: var(--ink, #22221F);
+
     }
+
+
+
+    /* =========================================================
+   PHOTO SELECTION HELP
+========================================================= */
+
+    .photo-selection-help {
+
+        color: var(--ink-soft, #6B655A);
+
+        font-family: 'Inter', sans-serif;
+
+        font-size: .75rem;
+
+    }
+
+
+
+    /* =========================================================
+   FIELD LABEL
+========================================================= */
 
     .folder-field-label {
+
         font-family: 'JetBrains Mono', monospace;
+
         font-size: .72rem;
+
         letter-spacing: .06em;
+
         text-transform: uppercase;
+
         color: var(--ink-soft, #6B655A);
+
         display: block;
+
         margin-bottom: .4rem;
+
     }
+
+
+
+    /* =========================================================
+   INPUT
+========================================================= */
 
     .folder-input {
+
         font-family: 'Inter', sans-serif;
+
         font-size: 1rem;
+
         border: 1px solid var(--line, #D6CCB4);
+
         border-radius: 8px;
+
         background: var(--paper, #F1ECE0);
+
         padding: .65rem .9rem;
+
         color: var(--ink, #22221F);
-        transition: border-color .2s, box-shadow .2s;
+
+        transition:
+            border-color .2s,
+            box-shadow .2s;
+
     }
+
+
     .folder-input:focus {
+
         border-color: var(--moss, #56725A);
-        box-shadow: 0 0 0 3px rgba(86, 114, 90, .15);
+
+        box-shadow:
+            0 0 0 3px rgba(86, 114, 90, .15);
+
         background: #fff;
+
     }
+
 
     .folder-input::placeholder {
+
         color: #a8a09a;
+
     }
+
+
+
+    /* =========================================================
+   META
+========================================================= */
 
     .folder-meta {
+
         color: var(--ink-soft, #6B655A);
+
         font-size: .85rem;
+
         font-family: 'Inter', sans-serif;
+
     }
 
-    /* page settings */
+
+
+    /* =========================================================
+   PAGE SETTINGS
+========================================================= */
+
     .page-settings-container {
+
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+
+        grid-template-columns:
+            repeat(auto-fill,
+                minmax(200px, 1fr));
+
         gap: 1rem;
+
     }
+
 
     .page-settings-container .card {
+
         background: var(--paper, #F1ECE0);
+
         border: 1px solid var(--line, #D6CCB4);
+
         border-radius: 10px;
-        padding: 0.8rem 1rem;
+
+        padding: .8rem 1rem;
+
     }
+
 
     .page-settings-container .card h6 {
+
         font-family: 'Fraunces', serif;
+
         font-weight: 600;
+
         color: var(--ink, #22221F);
-        margin-bottom: 0.4rem;
+
+        margin-bottom: .4rem;
+
     }
+
 
     .page-settings-container .card label {
+
         font-family: 'JetBrains Mono', monospace;
+
         font-size: .7rem;
+
         letter-spacing: .04em;
+
         text-transform: uppercase;
+
         color: var(--ink-soft, #6B655A);
+
         display: block;
+
         margin-bottom: .2rem;
+
     }
+
 
     .page-settings-container .card input {
+
         font-family: 'Inter', sans-serif;
+
         border: 1px solid var(--line, #D6CCB4);
+
         border-radius: 6px;
+
         padding: .4rem .7rem;
+
         width: 100%;
+
         background: #fff;
+
     }
 
-    /* photo selection */
-    .photo-select-card {
-        position: relative;
-        cursor: pointer;
+
+
+    /* =========================================================
+   AI SELECTION TOOLBAR
+========================================================= */
+
+    .ai-selection-toolbar {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 1rem;
+
+        padding: 1rem 1.25rem;
+
+        background:
+            linear-gradient(135deg,
+                #f7f3e8,
+                #ffffff);
+
+        border: 1px solid var(--line, #D6CCB4);
+
         border-radius: 12px;
-        overflow: hidden;
-        border: 3px solid transparent;
-        transition: border-color .2s, transform .2s, box-shadow .2s;
-        box-shadow: 0 4px 12px rgba(34,34,31,.06);
+
+    }
+
+
+    .ai-selection-info {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: .8rem;
+
+    }
+
+
+    .ai-icon {
+
+        width: 42px;
+
+        height: 42px;
+
+        border-radius: 50%;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        background: var(--gold, #C18B2E);
+
+        color: #fff;
+
+        font-size: 1.1rem;
+
+        flex-shrink: 0;
+
+    }
+
+
+    .ai-selection-info h6 {
+
+        margin: 0;
+
+        font-family: 'Fraunces', serif;
+
+        font-weight: 600;
+
+        color: var(--ink, #22221F);
+
+    }
+
+
+    .ai-selection-info p {
+
+        color: var(--ink-soft, #6B655A);
+
+        font-size: .82rem;
+
+    }
+
+
+
+    /* =========================================================
+   AI ACTIONS
+========================================================= */
+
+    .ai-selection-actions {
+
+        display: flex;
+
+        gap: .6rem;
+
+        flex-wrap: wrap;
+
+    }
+
+
+    .btn-ai-recommended {
+
+        background: var(--moss, #56725A);
+
+        color: #fff;
+
+        border: none;
+
+        border-radius: 999px;
+
+        padding: .55rem 1rem;
+
+        font-weight: 600;
+
+        transition: all .2s;
+
+    }
+
+
+    .btn-ai-recommended:hover {
+
+        background: #456049;
+
+        color: #fff;
+
+        transform: translateY(-1px);
+
+    }
+
+
+    .btn-clear-selection {
+
+        background: transparent;
+
+        color: var(--ink-soft, #6B655A);
+
+        border: 1px solid var(--line, #D6CCB4);
+
+        border-radius: 999px;
+
+        padding: .55rem 1rem;
+
+        font-weight: 600;
+
+        transition: all .2s;
+
+    }
+
+
+    .btn-clear-selection:hover {
+
         background: var(--paper-deep, #E7DFCC);
+
+        color: var(--ink, #22221F);
+
     }
+
+
+
+    /* =========================================================
+   PHOTO SELECTION
+========================================================= */
+
+    .photo-select-card {
+
+        position: relative;
+
+        cursor: pointer;
+
+        border-radius: 12px;
+
+        overflow: hidden;
+
+        border: 3px solid transparent;
+
+        transition:
+            border-color .2s,
+            transform .2s,
+            box-shadow .2s;
+
+        box-shadow:
+            0 4px 12px rgba(34, 34, 31, .06);
+
+        background: var(--paper-deep, #E7DFCC);
+
+    }
+
+
     .photo-select-card:hover {
+
         transform: translateY(-3px);
-        box-shadow: 0 8px 24px rgba(34,34,31,.12);
+
+        box-shadow:
+            0 8px 24px rgba(34, 34, 31, .12);
+
     }
+
 
     .photo-select-card.selected {
+
         border-color: var(--moss, #56725A);
-        box-shadow: 0 8px 24px rgba(86, 114, 90, .25);
+
+        box-shadow:
+            0 8px 24px rgba(86, 114, 90, .25);
+
     }
+
+
+
+    /* =========================================================
+   PHOTO IMAGE
+========================================================= */
 
     .photo-select-img {
+
         width: 100%;
+
         height: 220px;
+
         object-fit: cover;
+
         display: block;
+
         transition: transform .3s;
+
     }
+
+
     .photo-select-card:hover .photo-select-img {
+
         transform: scale(1.02);
+
     }
+
+
+
+    /* =========================================================
+   SELECTION OVERLAY
+========================================================= */
 
     .photo-select-overlay {
+
         position: absolute;
+
         top: 0;
+
         left: 0;
+
         right: 0;
+
         bottom: 0;
-        background: rgba(34,34,31,.3);
+
+        background: rgba(34, 34, 31, .3);
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         opacity: 0;
+
         transition: opacity .2s;
+
     }
+
+
     .photo-select-card.selected .photo-select-overlay {
+
         opacity: 1;
-        background: rgba(86, 114, 90, .25);
+
+        background:
+            rgba(86, 114, 90, .25);
+
     }
+
+
     .photo-select-card:hover .photo-select-overlay {
+
         opacity: 1;
+
     }
+
+
+
+    /* =========================================================
+   CHECK ICON
+========================================================= */
 
     .photo-select-check {
+
         width: 44px;
+
         height: 44px;
+
         border-radius: 50%;
+
         background: var(--moss, #56725A);
+
         color: #fff;
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         font-size: 1.4rem;
-        transform: scale(0.7);
+
+        transform: scale(.7);
+
         transition: transform .2s;
-        box-shadow: 0 4px 12px rgba(0,0,0,.2);
+
+        box-shadow:
+            0 4px 12px rgba(0, 0, 0, .2);
+
     }
+
+
     .photo-select-card.selected .photo-select-check {
+
         transform: scale(1);
+
         background: var(--moss, #56725A);
+
     }
+
+
+
+    /* =========================================================
+   SELECTION ORDER
+========================================================= */
 
     .selection-order {
+
         position: absolute;
+
         top: 10px;
+
         right: 10px;
+
         width: 36px;
+
         height: 36px;
+
         border-radius: 50%;
+
         background: var(--moss, #56725A);
+
         color: #fff;
+
         font-family: 'JetBrains Mono', monospace;
+
         font-weight: 700;
+
         font-size: .9rem;
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
-        z-index: 5;
-        box-shadow: 0 2px 8px rgba(0,0,0,.2);
+
+        z-index: 20;
+
+        box-shadow:
+            0 2px 8px rgba(0, 0, 0, .2);
+
     }
+
+
+
+    /* =========================================================
+   AI BADGES
+========================================================= */
+
+    .ai-photo-badge {
+
+        position: absolute;
+
+        top: 10px;
+
+        left: 10px;
+
+        z-index: 20;
+
+        padding: .35rem .65rem;
+
+        border-radius: 999px;
+
+        font-family: 'Inter', sans-serif;
+
+        font-size: .7rem;
+
+        font-weight: 700;
+
+        display: flex;
+
+        align-items: center;
+
+        gap: .3rem;
+
+        box-shadow:
+            0 3px 10px rgba(0, 0, 0, .18);
+
+    }
+
+
+    .ai-recommended {
+
+        background: #56725A;
+
+        color: #fff;
+
+    }
+
+
+    .ai-review {
+
+        background: #D69E2E;
+
+        color: #fff;
+
+    }
+
+
+    .ai-needs-review {
+
+        background: #B94A48;
+
+        color: #fff;
+
+    }
+
+
+
+    /* =========================================================
+   AI RECOMMENDED CARD
+========================================================= */
+
+    .photo-select-card.ai-recommended-card {
+
+        border-color: var(--gold, #C18B2E);
+
+    }
+
+
+
+    /* =========================================================
+   SELECTION BADGE
+========================================================= */
 
     .selection-badge {
+
         background: var(--paper-deep, #E7DFCC);
+
         color: var(--ink, #22221F);
+
         font-family: 'Inter', sans-serif;
+
         font-weight: 600;
+
         font-size: .85rem;
+
         padding: .4rem 1.2rem;
+
         border-radius: 999px;
+
         border: 1px solid var(--line, #D6CCB4);
+
     }
+
+
     .selection-badge span {
+
         color: var(--coral, #D9512F);
+
         font-weight: 700;
+
     }
+
+
+
+    /* =========================================================
+   EMPTY STATE
+========================================================= */
 
     .folder-empty-state {
+
         background: #ffffff;
+
         border: 1px solid var(--line, #D6CCB4);
+
         border-radius: 14px;
+
         padding: 3rem 2rem;
-        box-shadow: 0 18px 38px -18px rgba(34,34,31,.25);
+
+        box-shadow:
+            0 18px 38px -18px rgba(34, 34, 31, .25);
+
     }
+
 
     .folder-empty-title {
+
         font-family: 'Fraunces', serif;
+
         font-weight: 600;
+
         color: var(--ink, #22221F);
+
     }
 
-    /* responsive */
-    @media (max-width: 576px) {
-        .folder-header {
-            text-align: center;
+
+
+    /* =========================================================
+   RESPONSIVE
+========================================================= */
+
+    @media (max-width: 992px) {
+
+        .ai-selection-toolbar {
+
+            align-items: flex-start;
+
+            flex-direction: column;
+
         }
+
+        .ai-selection-actions {
+
+            width: 100%;
+
+        }
+
+    }
+
+
+    @media (max-width: 576px) {
+
+        .folder-header {
+
+            text-align: center;
+
+        }
+
+
         .btn-folder-cta,
         .btn-folder-cta-outline,
         .btn-folder-cta-outline-secondary {
+
             width: 100%;
+
             text-align: center;
+
         }
+
+
         .album-create-card .card-body {
+
             padding: 1.5rem !important;
+
         }
+
+
         .photo-select-img {
+
             height: 160px;
+
         }
+
+
         .page-settings-container {
+
             grid-template-columns: 1fr;
+
         }
+
+
+        .ai-selection-info {
+
+            align-items: flex-start;
+
+        }
+
+
+        .ai-selection-actions {
+
+            flex-direction: column;
+
+            width: 100%;
+
+        }
+
+
+        .btn-ai-recommended,
+        .btn-clear-selection {
+
+            width: 100%;
+
+        }
+
+
+        .ai-photo-badge {
+
+            font-size: .62rem;
+
+            padding: .3rem .5rem;
+
+        }
+
     }
 </style>
 
-<!-- ===== SCRIPT (unchanged functionality) ===== -->
+
+
+<!-- =============================================================
+     JAVASCRIPT
+============================================================== -->
+
 <script>
+
+
+    /* =========================================================
+       GENERATE PAGE SETTINGS
+    ========================================================= */
+
     function generatePageInputs() {
-        let totalPages = document.getElementById('totalPages').value;
-        let container = document.getElementById('pageSettings');
+
+        let totalPages =
+            document.getElementById(
+                'totalPages'
+            ).value;
+
+
+        let container =
+            document.getElementById(
+                'pageSettings'
+            );
+
 
         container.innerHTML = '';
 
+
         if (totalPages < 1) {
+
             return;
+
         }
 
-        for (let i = 1; i <= totalPages; i++) {
+
+        for (
+            let i = 1;
+            i <= totalPages;
+            i++
+        ) {
+
             container.innerHTML += `
-                <div class="card">
-                    <h6>Page ${i}</h6>
-                    <label>Number of Photos</label>
-                    <input type="number"
-                           name="page_${i}"
-                           value="1"
-                           min="1"
-                           class="form-control">
-                </div>
-            `;
+
+            <div class="card">
+
+                <h6>
+                    Page ${i}
+                </h6>
+
+                <label>
+                    Number of Photos
+                </label>
+
+                <input
+                    type="number"
+                    name="page_${i}"
+                    value="1"
+                    min="1"
+                    class="form-control"
+                >
+
+            </div>
+
+        `;
+
         }
+
     }
 
-    /* ==========================
+
+
+    /* =========================================================
        SELECTION ORDER TRACKING
-       selectedOrder holds photo IDs
-       in the exact order clicked —
-       this is the single source of
-       truth sent to the server.
-    ========================== */
+    ========================================================= */
+
+    /*
+        selectedOrder contains the photo IDs
+        in the exact order clicked.
+    
+        Example:
+    
+        Photo 8
+        Photo 3
+        Photo 5
+    
+        becomes:
+    
+        ["8", "3", "5"]
+    
+        This is the single source of truth
+        sent to Django.
+    */
 
     let selectedOrder = [];
 
-    function updateSelectionOrder() {
-        document.getElementById('selectedCount').innerText = selectedOrder.length;
 
-        document.querySelectorAll('.photo-select-card').forEach(card => {
-            const id = card.dataset.id;
-            const badge = card.querySelector('.selection-order');
-            const idx = selectedOrder.indexOf(id);
+
+    /* =========================================================
+       UPDATE SELECTION UI
+    ========================================================= */
+
+    function updateSelectionOrder() {
+
+
+        /*
+            Update selected count
+        */
+
+        document.getElementById(
+            'selectedCount'
+        ).innerText =
+            selectedOrder.length;
+
+
+
+        /*
+            Update every photo card
+        */
+
+        document.querySelectorAll(
+            '.photo-select-card'
+        ).forEach(card => {
+
+
+            const id =
+                card.dataset.id;
+
+
+            const badge =
+                card.querySelector(
+                    '.selection-order'
+                );
+
+
+            const idx =
+                selectedOrder.indexOf(id);
+
+
+
+            /*
+                Photo is NOT selected
+            */
 
             if (idx === -1) {
-                card.classList.remove('selected');
-                badge.classList.add('d-none');
-            } else {
-                card.classList.add('selected');
-                badge.classList.remove('d-none');
-                badge.innerText = idx + 1;
+
+                card.classList.remove(
+                    'selected'
+                );
+
+                badge.classList.add(
+                    'd-none'
+                );
+
             }
+
+
+            /*
+                Photo IS selected
+            */
+
+            else {
+
+                card.classList.add(
+                    'selected'
+                );
+
+                badge.classList.remove(
+                    'd-none'
+                );
+
+                badge.innerText =
+                    idx + 1;
+
+            }
+
         });
 
-        document.getElementById('orderedPhotoIds').value = selectedOrder.join(',');
+
+
+        /*
+            Update hidden input
+        */
+
+        document.getElementById(
+            'orderedPhotoIds'
+        ).value =
+            selectedOrder.join(',');
+
     }
+
+
+
+    /* =========================================================
+       NORMAL PHOTO SELECTION
+    ========================================================= */
 
     function togglePhoto(card) {
-        const id = card.dataset.id;
-        const pos = selectedOrder.indexOf(id);
 
-        if (pos === -1) {
-            // newly clicked -> goes to the end of the order
+
+        const id =
+            card.dataset.id;
+
+
+        const position =
+            selectedOrder.indexOf(id);
+
+
+
+        /*
+            Photo not selected
+            → add to end
+        */
+
+        if (position === -1) {
+
             selectedOrder.push(id);
-        } else {
-            // unclicked -> remove it, everyone else keeps their relative order
-            selectedOrder.splice(pos, 1);
+
         }
 
+
+        /*
+            Photo already selected
+            → remove
+        */
+
+        else {
+
+            selectedOrder.splice(
+                position,
+                1
+            );
+
+        }
+
+
         updateSelectionOrder();
+
+    }
+
+
+
+    /* =========================================================
+       SELECT ALL AI RECOMMENDED
+    ========================================================= */
+
+    function selectAllRecommended() {
+
+
+        document.querySelectorAll(
+            '.photo-select-card'
+        ).forEach(card => {
+
+
+            const isRecommended =
+                card.dataset.recommended === 'true';
+
+
+            const id =
+                card.dataset.id;
+
+
+
+            /*
+                Only add recommended photos
+                which aren't already selected.
+            */
+
+            if (
+                isRecommended &&
+                !selectedOrder.includes(id)
+            ) {
+
+                selectedOrder.push(id);
+
+            }
+
+        });
+
+
+        updateSelectionOrder();
+
+
+    }
+
+
+
+    /* =========================================================
+       CLEAR SELECTION
+    ========================================================= */
+
+    function clearSelection() {
+
+        selectedOrder = [];
+
+        updateSelectionOrder();
+
+    }
+
+
+
+    /* =========================================================
+       FORM VALIDATION
+    ========================================================= */
+
+    document.getElementById(
+        'createAlbumForm'
+    ).addEventListener(
+        'submit',
+        function (event) {
+
+
+            /*
+                No photo selected
+            */
+
+            if (
+                selectedOrder.length === 0
+            ) {
+
+                event.preventDefault();
+
+
+                alert(
+                    'Please select at least one photo.'
+                );
+
+
+                return false;
+
+            }
+
+
+            /*
+                Make sure hidden input
+                contains the latest order.
+            */
+
+            document.getElementById(
+                'orderedPhotoIds'
+            ).value =
+                selectedOrder.join(',');
+
+        }
+    );
+    async function suggestAILayout(button) {
+
+        // --------------------------------------------------
+        // Get currently selected photos
+        // --------------------------------------------------
+
+        const selectedCount =
+            selectedOrder.length;
+
+        // --------------------------------------------------
+        // No photos selected
+        // --------------------------------------------------
+
+        if (selectedCount === 0) {
+
+            alert(
+                'Please select photos first.'
+            );
+
+            return;
+        }
+
+        // --------------------------------------------------
+        // Store original button text
+        // --------------------------------------------------
+
+        const originalText =
+            button.innerHTML;
+
+        button.disabled = true;
+
+        button.innerHTML = `
+        <i class="bi bi-stars me-1"></i>
+        AI Suggesting...
+    `;
+
+        try {
+
+            // --------------------------------------------------
+            // Call AI layout API
+            // --------------------------------------------------
+
+            const response = await fetch(
+                `{% url 'suggest_album_layout' %}?photo_count=${selectedCount}`
+            );
+
+            const data = await response.json();
+
+            // --------------------------------------------------
+            // API error
+            // --------------------------------------------------
+
+            if (data.status !== 'success') {
+
+                alert(
+                    data.message ||
+                    'Unable to suggest layout.'
+                );
+
+                return;
+            }
+
+            // --------------------------------------------------
+            // Set total pages
+            // --------------------------------------------------
+
+            document.getElementById(
+                'totalPages'
+            ).value = data.total_pages;
+
+            // --------------------------------------------------
+            // Generate page input boxes
+            // --------------------------------------------------
+
+            generatePageInputs();
+
+            // --------------------------------------------------
+            // Apply AI suggested layout
+            // --------------------------------------------------
+
+            data.layout.forEach(
+                (photoCount, index) => {
+
+                    const input =
+                        document.querySelector(
+                            `[name="page_${index + 1}"]`
+                        );
+
+                    if (input) {
+
+                        input.value =
+                            photoCount;
+                    }
+                }
+            );
+
+            // --------------------------------------------------
+            // Show result
+            // --------------------------------------------------
+
+            alert(
+                `AI suggested ${data.total_pages} pages for ${selectedCount} photos.`
+            );
+
+        } catch (error) {
+
+            console.error(
+                'AI layout suggestion error:',
+                error
+            );
+
+            alert(
+                'Unable to generate AI layout suggestion.'
+            );
+
+        } finally {
+
+            // --------------------------------------------------
+            // Restore button
+            // --------------------------------------------------
+
+            button.disabled = false;
+
+            button.innerHTML =
+                originalText;
+        }
     }
 </script>
+
 
 {% endblock %}

@@ -5,333 +5,2367 @@
 <div class="folder-details-wrapper">
     <div class="container-fluid px-4 py-5">
 
-        <!-- ===== MESSAGES ===== -->
+        <!-- MESSAGES -->
         {% if messages %}
-            <div class="row mb-4">
-                <div class="col-12">
-                    {% for message in messages %}
-                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show folder-alert" role="alert">
-                            <i class="bi {% if message.tags == 'error' %}bi-exclamation-triangle-fill{% else %}bi-check-circle-fill{% endif %} me-2"></i>
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
+        <div class="row mb-4">
+            <div class="col-12">
+                {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% else %}success{% endif %} alert-dismissible fade show folder-alert"
+                    role="alert">
+
+                    <i class="bi
+                        {% if message.tags == 'error' %}
+                            bi-exclamation-triangle-fill
+                        {% elif message.tags == 'warning' %}
+                            bi-exclamation-circle-fill
+                        {% else %}
+                            bi-check-circle-fill
+                        {% endif %}
+                        me-2">
+                    </i>
+
+                    {{ message }}
+
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                    </button>
+
                 </div>
+                {% endfor %}
             </div>
+        </div>
         {% endif %}
 
-        <!-- ===== FOLDER HEADER ===== -->
+
+        <!-- ========================================= -->
+        <!-- FOLDER HEADER -->
+        <!-- ========================================= -->
+
         <div class="row mb-5">
+
             <div class="col-12">
-                <div class="folder-header d-flex flex-wrap align-items-center justify-content-between bg-folder-cover p-4 p-lg-5 rounded-4 shadow-lg">
+
+                <div
+                    class="folder-header d-flex flex-wrap align-items-center justify-content-between bg-folder-cover p-4 p-lg-5 rounded-4 shadow-lg">
+
+                    <!-- FOLDER INFORMATION -->
+
                     <div>
-                        <span class="folder-eyebrow"><i class="bi bi-folder-fill me-1"></i> {{ folder.folder_id }}</span>
-                        <h1 class="folder-heading mb-2">{{ folder.folder_id }}</h1>
+
+                        <span class="folder-eyebrow">
+
+                            <i class="bi bi-folder-fill me-1"></i>
+
+                            {{ folder.folder_id }}
+
+                        </span>
+
+
+                        <h1 class="folder-heading mb-2">
+
+                            {{ folder.folder_id }}
+
+                        </h1>
+
+
                         <div class="d-flex flex-wrap gap-4 folder-meta-light mt-2">
-                            <span><i class="bi bi-person me-1"></i> {{ folder.created_by.full_name }}</span>
-                            <span><i class="bi bi-images me-1"></i> {{ photos.count }} photos</span>
-                            <span><i class="bi bi-heart-fill me-1" style="color: var(--coral);"></i> {{ liked_count }} likes</span>
+
+                            <!-- CREATED BY -->
+
+                            <span>
+
+                                <i class="bi bi-person me-1"></i>
+
+                                {{ folder.created_by.full_name }}
+
+                            </span>
+
+
+                            <!-- PHOTO COUNT -->
+
+                            <span>
+
+                                <i class="bi bi-images me-1"></i>
+
+                                {{ photos|length }} photos
+
+                            </span>
+
+
+                            <!-- LIKES -->
+
+                            <span>
+
+                                <i class="bi bi-heart-fill me-1" style="color: var(--coral);">
+                                </i>
+
+                                {{ liked_count }} likes
+
+                            </span>
+
                         </div>
+
                     </div>
-                    <div class="d-flex flex-wrap gap-2 mt-3 mt-sm-0">
+
+
+                    <!-- FOLDER ACTIONS -->
+
+                    <div class="folder-actions d-flex flex-wrap gap-2 mt-3 mt-sm-0">
+
+                        <!-- UPLOAD PHOTOS -->
+
                         <a href="{% url 'upload_folder_photos' folder.id %}" class="btn btn-folder-cta px-4">
-                            <i class="bi bi-cloud-upload me-2"></i>Upload Photos
+
+                            <i class="bi bi-cloud-upload me-2"></i>
+
+                            Upload Photos
+
                         </a>
+
+
+                        <!-- CREATE ALBUM -->
+
                         <a href="{% url 'create_album' folder.id %}" class="btn btn-folder-cta-secondary px-4">
-                            <i class="bi bi-images me-2"></i>Create Album
+
+                            <i class="bi bi-images me-2"></i>
+
+                            Create Album
+
                         </a>
+
+
+                        <!-- AI ANALYSIS -->
+
+                        <form method="post" action="{% url 'analyze_folder_photos' folder.id %}">
+
+                            {% csrf_token %}
+
+                            <button type="submit" class="btn btn-ai-analysis px-4" {% if not photos %}disabled{% endif %}>
+
+                                <i class="bi bi-stars me-2"></i>
+
+                                Run AI Analysis
+
+                            </button>
+
+                        </form>
+
                     </div>
+
                 </div>
+
             </div>
+
+        </div>
+        <!-- ========================================= -->
+        <!-- AI FACE GROUPING -->
+        <!-- ========================================= -->
+
+        <div class="row mb-4">
+
+            <div class="col-12">
+
+                <div class="face-grouping-panel">
+
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+
+                        <!-- LEFT SIDE -->
+                        <div class="d-flex align-items-center gap-3">
+
+                            <div class="face-grouping-icon">
+                                <i class="bi bi-people-fill"></i>
+                            </div>
+
+                            <div>
+
+                                <h5 class="face-grouping-title mb-1">
+                                    AI Smart Face Grouping
+                                </h5>
+
+                                <p class="face-grouping-description mb-0">
+                                    Detect and group similar faces across
+                                    the photos in this folder.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- RIGHT SIDE -->
+                        <div>
+
+                            <form method="post" action="{% url 'group_faces' folder.id %}" onsubmit="return confirm(
+        'AI will analyze all photos in this folder and replace any previous face grouping. Continue?'
+    );">
+                                {% csrf_token %}
+
+                                <button type="submit" class="btn btn-face-grouping" {% if not photos %}disabled{% endif %}>
+                                    <i class="bi bi-stars me-2"></i>
+                                    Group Faces with AI
+                                </button>
+                            </form>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- FACE STATISTICS -->
+
+                    {% if face_count > 0 %}
+
+                    <div class="face-grouping-stats mt-4">
+
+                        <div class="face-stat">
+
+                            <div class="face-stat-icon">
+                                <i class="bi bi-person-bounding-box"></i>
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    {{ face_count }}
+                                </strong>
+
+                                <span>
+                                    Faces Detected
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="face-stat">
+
+                            <div class="face-stat-icon">
+                                <i class="bi bi-people"></i>
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    {{ people_group_count }}
+                                </strong>
+
+                                <span>
+                                    Groups Found
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {% else %}
+
+                    <div class="face-grouping-empty mt-4">
+
+                        <i class="bi bi-info-circle me-2"></i>
+
+                        No face grouping has been performed yet.
+
+                        Click
+                        <strong>Group Faces with AI</strong>
+                        to analyze this folder.
+
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
         </div>
 
-        <!-- ===== PHOTO GRID ===== -->
-        <div class="row g-4">
-            {% for photo in photos %}
-            <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6">
-                <div class="photo-card h-100">
-                    <div class="photo-image-wrapper">
-                        <img src="{{ photo.image.url }}"
-                             class="photo-image"
-                             alt="Photo"
-                             data-bs-toggle="modal"
-                             data-bs-target="#photoModal{{ photo.id }}">
-                        <div class="photo-overlay">
-                            <button class="btn btn-light btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#photoModal{{ photo.id }}">
-                                <i class="bi bi-eye me-1"></i> Preview
-                            </button>
+
+        <!-- ========================================= -->
+        <!-- DETECTED FACE GROUPS -->
+        <!-- ========================================= -->
+
+        {% if face_groups %}
+
+        <div class="row mb-4">
+
+            <div class="col-12">
+
+                <div class="face-groups-container">
+
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+
+                        <div>
+
+                            <h5 class="filter-title mb-1">
+
+                                <i class="bi bi-people-fill me-2"></i>
+
+                                Detected Face Groups
+
+                            </h5>
+
+                            <small class="filter-description">
+
+                                Similar faces detected and grouped by AI.
+
+                            </small>
+
                         </div>
+
                     </div>
-                    <div class="photo-card-footer">
-                        <a href="{% url 'delete_photo' photo.id %}"
-                           class="btn btn-photo-delete btn-sm"
-                           onclick="return confirm('Delete this photo?')">
-                            <i class="bi bi-trash me-1"></i> Delete
-                        </a>
+
+
+                    <div class="row g-3">
+
+                        {% for group in face_groups %}
+
+                        <div class="col-xl-4 col-lg-4 col-md-6">
+
+                            <div class="face-group-card h-100">
+
+                                <div class="face-group-card-body">
+
+                                    <div class="d-flex align-items-center gap-3">
+
+                                        <div class="face-group-avatar">
+
+                                            {% if group.name == "Unknown" %}
+
+                                            <i class="bi bi-question-lg"></i>
+
+                                            {% else %}
+
+                                            <i class="bi bi-person-fill"></i>
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        <div>
+
+                                            <h6 class="face-group-name mb-1">
+
+                                                {{ group.name }}
+
+                                            </h6>
+
+                                            <p class="face-group-count mb-0">
+
+                                                {{ group.faces.count }}
+
+                                                detected face{{ group.faces.count|pluralize }}
+
+                                            </p>
+                                            <a href="{% url 'face_group_photos' folder.id group.id %}"
+                                                class="btn btn-sm btn-dark">
+                                                View Photos
+                                            </a>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        {% endfor %}
+
                     </div>
+
                 </div>
+
             </div>
 
-            <!-- Photo Preview Modal -->
-            <div class="modal fade" id="photoModal{{ photo.id }}" tabindex="-1">
-                <div class="modal-dialog modal-xl modal-dialog-centered">
-                    <div class="modal-content folder-modal">
-                        <div class="modal-header border-0">
-                            <h5 class="folder-modal-title"><i class="bi bi-image me-2"></i>Photo Preview</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        {% endif %}
+        <!-- ========================================= -->
+        <!-- AI ANALYSIS SUMMARY -->
+        <!-- ========================================= -->
+
+        {% if analyzed_count %}
+
+        <div class="row mb-4">
+
+            <div class="col-12">
+
+                <div class="ai-summary">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="ai-summary-icon">
+
+                            <i class="bi bi-stars"></i>
+
                         </div>
-                        <div class="modal-body text-center p-4">
-                            <img src="{{ photo.image.url }}" class="img-fluid rounded-3" alt="Photo preview" style="max-height: 80vh;">
+
+
+                        <div>
+
+                            <h5 class="mb-1">
+
+                                AI Analysis Completed
+
+                            </h5>
+
+
+                            <p class="mb-0">
+
+                                {{ analyzed_count }}
+
+                                of
+
+                                {{ photos|length }}
+
+                                photos analyzed.
+
+                            </p>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
+
+        </div>
+
+        {% endif %}
+
+        <!-- ========================================= -->
+        <!-- AI PHOTO FILTERS -->
+        <!-- ========================================= -->
+
+        <div class="row mb-4">
+
+            <div class="col-12">
+
+                <div class="photo-filter-panel">
+
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+
+                        <div>
+
+                            <h5 class="filter-title mb-1">
+
+                                <i class="bi bi-funnel-fill me-2"></i>
+
+                                Photo Filter
+
+                            </h5>
+
+                            <small class="filter-description">
+
+                                Filter photos using AI recommendations.
+
+                            </small>
+
+                        </div>
+
+
+                        <div class="photo-filter-buttons">
+
+                            <!-- ALL -->
+
+                            <a href="{% url 'folder_details' folder.id %}?filter=all" class="photo-filter-btn
+                        {% if current_filter == 'all' %}
+                            active
+                        {% endif %}">
+
+                                <i class="bi bi-grid-3x3-gap-fill me-1"></i>
+
+                                All
+
+                                <span class="filter-count">
+
+                                    {{ all_photos_count }}
+
+                                </span>
+
+                            </a>
+
+
+                            <!-- RECOMMENDED -->
+
+                            <a href="{% url 'folder_details' folder.id %}?filter=recommended" class="photo-filter-btn recommended-filter
+                        {% if current_filter == 'recommended' %}
+                            active
+                        {% endif %}">
+
+                                <i class="bi bi-star-fill me-1"></i>
+
+                                AI Recommended
+
+                                <span class="filter-count">
+
+                                    {{ recommended_count }}
+
+                                </span>
+
+                            </a>
+
+
+                            <!-- REVIEW -->
+
+                            <a href="{% url 'folder_details' folder.id %}?filter=review" class="photo-filter-btn review-filter
+                        {% if current_filter == 'review' %}
+                            active
+                        {% endif %}">
+
+                                <i class="bi bi-eye-fill me-1"></i>
+
+                                Review
+
+                                <span class="filter-count">
+
+                                    {{ review_count }}
+
+                                </span>
+
+                            </a>
+
+
+                            <!-- NEEDS REVIEW -->
+
+                            <a href="{% url 'folder_details' folder.id %}?filter=needs_review" class="photo-filter-btn needs-review-filter
+                        {% if current_filter == 'needs_review' %}
+                            active
+                        {% endif %}">
+
+                                <i class="bi bi-exclamation-circle-fill me-1"></i>
+
+                                Needs Review
+
+                                <span class="filter-count">
+
+                                    {{ needs_review_count }}
+
+                                </span>
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ========================================= -->
+        <!-- PHOTO GRID -->
+        <!-- ========================================= -->
+
+        <div class="row g-4">
+
+            {% for photo in photos %}
+
+            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-6">
+
+                <div class="photo-card h-100">
+
+
+                    <!-- ================================= -->
+                    <!-- PHOTO -->
+                    <!-- ================================= -->
+
+                    <div class="photo-image-wrapper">
+
+                        <img src="{{ photo.image.url }}" class="photo-image" alt="Photo {{ forloop.counter }}"
+                            data-bs-toggle="modal" data-bs-target="#photoModal{{ photo.id }}">
+
+
+                        <!-- PHOTO OVERLAY -->
+
+                        <div class="photo-overlay">
+
+                            <button type="button" class="btn btn-light btn-sm rounded-pill px-3" data-bs-toggle="modal"
+                                data-bs-target="#photoModal{{ photo.id }}">
+
+                                <i class="bi bi-eye me-1"></i>
+
+                                Preview
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================================= -->
+                    <!-- AI ANALYSIS -->
+                    <!-- ================================= -->
+
+                    {% if photo.analysis_result %}
+
+                    <div class="ai-analysis-panel">
+
+
+                        <!-- AI HEADER -->
+
+                        <div class="d-flex justify-content-between align-items-center mb-3 gap-2">
+
+                            <strong>
+
+                                <i class="bi bi-stars me-1"></i>
+
+                                AI Analysis
+
+                            </strong>
+                            <!-- QUALITY SCORE -->
+
+                            <div class="ai-quality-score mt-3">
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <span>
+                                        <i class="bi bi-speedometer2 me-1"></i>
+                                        Quality Score
+                                    </span>
+
+                                    <strong>
+                                        {{ photo.analysis_result.quality_score }}/100
+                                    </strong>
+
+                                </div>
+
+                                <div class="progress mt-2">
+
+                                    <div class="progress-bar
+                                        {% if photo.analysis_result.quality_score >= 75 %}
+                                            bg-success
+                                        {% elif photo.analysis_result.quality_score >= 50 %}
+                                            bg-warning
+                                        {% else %}
+                                            bg-danger
+                                        {% endif %}" role="progressbar"
+                                        data-progress="{{ photo.analysis_result.quality_score }}">
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- RECOMMENDATION -->
+
+                            <div class="mt-3">
+
+                                {% if photo.analysis_result.recommendation == "Recommended" %}
+
+                                <span class="badge bg-success">
+
+                                    <i class="bi bi-check-circle-fill me-1"></i>
+
+                                    AI Recommended
+
+                                </span>
+
+                                {% elif photo.analysis_result.recommendation == "Review" %}
+
+                                <span class="badge bg-warning text-dark">
+
+                                    <i class="bi bi-eye-fill me-1"></i>
+
+                                    Review Photo
+
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge bg-danger">
+
+                                    <i class="bi bi-exclamation-circle-fill me-1"></i>
+
+                                    Needs Review
+
+                                </span>
+
+                                {% endif %}
+
+                            </div>
+
+                            <!-- BLUR STATUS -->
+
+                            {% if photo.analysis_result.blur_status == "Blurry" %}
+
+                            <span class="badge bg-warning text-dark">
+
+                                Potentially blurry
+
+                            </span>
+
+
+                            {% elif photo.analysis_result.blur_status == "Moderately sharp" %}
+
+                            <span class="badge bg-info text-dark">
+
+                                Moderately sharp
+
+                            </span>
+
+
+                            {% else %}
+
+                            <span class="badge bg-success">
+
+                                Sharp
+
+                            </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- ================================= -->
+                        <!-- SHARPNESS -->
+                        <!-- ================================= -->
+
+                        <div class="analysis-metric">
+
+                            <div class="d-flex justify-content-between mb-1">
+
+                                <span>
+
+                                    Sharpness
+
+                                </span>
+
+
+                                <strong>
+
+                                    {{ photo.analysis_result.sharpness }}
+
+                                </strong>
+
+                            </div>
+
+
+                            <div class="progress">
+
+                                <div class="progress-bar
+                                    {% if photo.analysis_result.blur_status == 'Blurry' %}
+                                        bg-warning
+                                    {% elif photo.analysis_result.blur_status == 'Moderately sharp' %}
+                                        bg-info
+                                    {% else %}
+                                        bg-success
+                                    {% endif %}" role="progressbar"
+                                    data-progress="{% if photo.analysis_result.sharpness >= 150 %}100{% elif photo.analysis_result.sharpness >= 50 %}50{% else %}10{% endif %}">
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================= -->
+                        <!-- BRIGHTNESS -->
+                        <!-- ================================= -->
+
+                        <div class="analysis-metric mt-3">
+
+                            <div class="d-flex justify-content-between mb-1">
+
+                                <span>
+
+                                    Brightness
+
+                                </span>
+
+
+                                <strong>
+
+                                    {{ photo.analysis_result.brightness }}
+
+                                </strong>
+
+                            </div>
+
+
+                            <div class="progress">
+
+                                <div class="progress-bar
+                                    {% if photo.analysis_result.brightness_status == 'Too dark' %}
+                                        bg-danger
+                                    {% elif photo.analysis_result.brightness_status == 'Too bright' %}
+                                        bg-warning
+                                    {% else %}
+                                        bg-success
+                                    {% endif %}" role="progressbar"
+                                    data-progress="{% widthratio photo.analysis_result.brightness 255 100 %}">
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- BRIGHTNESS STATUS -->
+
+                            <div class="mt-1 small">
+
+                                {% if photo.analysis_result.brightness_status == "Too dark" %}
+
+                                <span class="text-danger">
+
+                                    <i class="bi bi-moon-fill me-1"></i>
+
+                                    Too dark
+
+                                </span>
+
+
+                                {% elif photo.analysis_result.brightness_status == "Too bright" %}
+
+                                <span class="text-warning">
+
+                                    <i class="bi bi-sun-fill me-1"></i>
+
+                                    Too bright
+
+                                </span>
+
+
+                                {% else %}
+
+                                <span class="text-success">
+
+                                    <i class="bi bi-check-circle-fill me-1"></i>
+
+                                    Normal brightness
+
+                                </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================= -->
+                        <!-- IMAGE DIMENSIONS -->
+                        <!-- ================================= -->
+
+                        <div class="analysis-dimensions mt-3">
+
+                            <i class="bi bi-aspect-ratio me-1"></i>
+
+                            {{ photo.analysis_result.width }}
+
+                            ×
+
+                            {{ photo.analysis_result.height }}
+
+                            px
+
+                        </div>
+
+
+                        <!-- ================================= -->
+                        <!-- AI NOTE -->
+                        <!-- ================================= -->
+
+                        <p class="analysis-note mb-0 mt-2">
+
+                            <i class="bi bi-info-circle me-1"></i>
+
+                            Quality indicators are suggestions,
+                            not automatic photo rejection.
+
+                        </p>
+
+                    </div>
+
+                    {% else %}
+
+                    <!-- NO AI ANALYSIS YET -->
+
+                    <div class="ai-analysis-panel ai-not-analyzed">
+
+                        <div class="d-flex align-items-center gap-2">
+
+                            <i class="bi bi-stars"></i>
+
+                            <span>
+
+                                Not analyzed yet
+
+                            </span>
+
+                        </div>
+
+                        <small>
+
+                            Click "Run AI Analysis" to analyze this photo.
+
+                        </small>
+
+                    </div>
+
+                    {% endif %}
+
+
+                    <!-- ================================= -->
+                    <!-- PHOTO FOOTER -->
+                    <!-- ================================= -->
+
+                    <div class="photo-card-footer">
+
+                        <a href="{% url 'delete_photo' photo.id %}" class="btn btn-photo-delete btn-sm"
+                            onclick="return confirm('Delete this photo?')">
+
+                            <i class="bi bi-trash me-1"></i>
+
+                            Delete
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- PHOTO PREVIEW MODAL -->
+            <!-- ========================================= -->
+
+            <div class="modal fade" id="photoModal{{ photo.id }}" tabindex="-1"
+                aria-labelledby="photoModalLabel{{ photo.id }}" aria-hidden="true">
+
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+
+                    <div class="modal-content folder-modal">
+
+
+                        <!-- MODAL HEADER -->
+
+                        <div class="modal-header border-0">
+
+                            <h5 class="folder-modal-title" id="photoModalLabel{{ photo.id }}">
+
+                                <i class="bi bi-image me-2"></i>
+
+                                Photo Preview
+
+                            </h5>
+
+
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
+                            </button>
+
+                        </div>
+
+
+                        <!-- MODAL BODY -->
+
+                        <div class="modal-body text-center p-4">
+
+                            <img src="{{ photo.image.url }}" class="img-fluid rounded-3" alt="Photo preview"
+                                style="max-height: 80vh;">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ========================================= -->
+            <!-- EMPTY STATE -->
+            <!-- ========================================= -->
 
             {% empty %}
-            <!-- empty state -->
+
             <div class="col-12">
+
                 <div class="folder-empty-state text-center">
+
                     <div class="mb-4">
-                        <i class="bi bi-image" style="font-size: 3.6rem; color: var(--line);"></i>
+
+                        {% if current_filter == "recommended" %}
+
+                        <i class="bi bi-star" style="font-size: 3.6rem; color: var(--line);">
+                        </i>
+
+                        {% elif current_filter == "review" %}
+
+                        <i class="bi bi-eye" style="font-size: 3.6rem; color: var(--line);">
+                        </i>
+
+                        {% elif current_filter == "needs_review" %}
+
+                        <i class="bi bi-exclamation-circle" style="font-size: 3.6rem; color: var(--line);">
+                        </i>
+
+                        {% else %}
+
+                        <i class="bi bi-image" style="font-size: 3.6rem; color: var(--line);">
+                        </i>
+
+                        {% endif %}
+
                     </div>
-                    <h4 class="folder-empty-title">No photos uploaded yet</h4>
-                    <p class="folder-meta mb-4">Upload photos to start building albums.</p>
+
+
+                    {% if current_filter == "recommended" %}
+
+                    <h4 class="folder-empty-title">
+                        No AI recommended photos
+                    </h4>
+
+                    <p class="folder-meta mb-4">
+                        No photos currently meet the AI recommendation criteria.
+                    </p>
+
+
+                    {% elif current_filter == "review" %}
+
+                    <h4 class="folder-empty-title">
+                        No photos need review
+                    </h4>
+
+                    <p class="folder-meta mb-4">
+                        There are no photos currently marked for review.
+                    </p>
+
+
+                    {% elif current_filter == "needs_review" %}
+
+                    <h4 class="folder-empty-title">
+                        No photos need further review
+                    </h4>
+
+                    <p class="folder-meta mb-4">
+                        No photos currently have a low quality recommendation.
+                    </p>
+
+
+                    {% else %}
+
+                    <h4 class="folder-empty-title">
+                        No photos uploaded yet
+                    </h4>
+
+                    <p class="folder-meta mb-4">
+                        Upload photos to start building albums.
+                    </p>
+
                     <a href="{% url 'upload_folder_photos' folder.id %}" class="btn btn-folder-cta px-5">
-                        <i class="bi bi-cloud-upload me-2"></i>Upload Photos
+
+                        <i class="bi bi-cloud-upload me-2"></i>
+
+                        Upload Photos
+
                     </a>
+
+                    {% endif %}
+
+
+                    {% if current_filter != "all" %}
+
+                    <div class="mt-3">
+
+                        <a href="{% url 'folder_details' folder.id %}?filter=all" class="btn btn-folder-cta-secondary">
+
+                            <i class="bi bi-grid-3x3-gap me-1"></i>
+
+                            Show All Photos
+
+                        </a>
+
+                    </div>
+
+                    {% endif %}
+
                 </div>
+
             </div>
+
             {% endfor %}
+
         </div>
 
-        <!-- ===== FOOTER NOTE ===== -->
+
+        <!-- ========================================= -->
+        <!-- FOOTER -->
+        <!-- ========================================= -->
+
         <div class="row mt-5">
+
             <div class="col-12 text-center folder-meta">
-                <i class="bi bi-folder2-open me-1"></i> {{ photos.count }} photos in this folder.
+
+                <i class="bi bi-folder2-open me-1"></i>
+
+                {{ photos|length }} photos in this folder.
+
             </div>
+
         </div>
 
     </div>
 </div>
 
-<!-- ===== STYLES (matching folders theme) ===== -->
+
+<!-- ================================================= -->
+<!-- STYLES -->
+<!-- ================================================= -->
+
 <style>
-    /* --- folder details wrapper --- */
     .folder-details-wrapper {
         background: var(--paper, #F1ECE0);
         min-height: 80vh;
-        background-image: radial-gradient(circle at 1px 1px, rgba(34,34,31,.05) 1px, transparent 0);
+
+        background-image: radial-gradient(circle at 1px 1px,
+                rgba(34, 34, 31, .05) 1px,
+                transparent 0);
+
         background-size: 18px 18px;
     }
 
-    /* header */
+
+    /* =========================================
+       FOLDER HEADER
+    ========================================= */
+
     .bg-folder-cover {
         background: var(--ink, #22221F);
         border-radius: 14px;
     }
 
+
     .folder-eyebrow {
+
         font-family: 'JetBrains Mono', monospace;
+
         font-size: .72rem;
+
         letter-spacing: .12em;
+
         text-transform: uppercase;
+
         color: var(--gold, #C18B2E);
+
         display: inline-flex;
+
         align-items: center;
+
         margin-bottom: .6rem;
     }
 
+
     .folder-heading {
+
         font-family: 'Fraunces', serif;
+
         font-weight: 600;
+
         font-size: clamp(1.9rem, 3vw, 2.5rem);
+
         color: var(--paper, #F1ECE0);
+
         margin: 0;
     }
 
+
     .folder-meta-light {
+
         color: #C8C2B2;
+
         font-size: .95rem;
+
         font-family: 'Inter', sans-serif;
     }
+
+
     .folder-meta-light i {
+
         color: var(--gold, #C18B2E);
     }
 
+
+    .folder-actions {
+
+        align-items: center;
+    }
+
+
+    /* =========================================
+       UPLOAD BUTTON
+    ========================================= */
+
     .btn-folder-cta {
+
         background: var(--coral, #D9512F);
+
         color: #fff;
+
         font-family: 'Inter', sans-serif;
+
         font-weight: 600;
+
         border-radius: 999px;
+
         padding: .7rem 1.8rem;
+
         border: none;
+
         transition: background .2s;
     }
-    .btn-folder-cta:hover { background: #bf4324; color: #fff; }
+
+
+    .btn-folder-cta:hover {
+
+        background: #bf4324;
+
+        color: #fff;
+    }
+
+
+    /* =========================================
+       CREATE ALBUM BUTTON
+    ========================================= */
 
     .btn-folder-cta-secondary {
+
         background: transparent;
+
         color: var(--paper, #F1ECE0);
+
         font-family: 'Inter', sans-serif;
+
         font-weight: 600;
+
         border-radius: 999px;
+
         padding: .7rem 1.8rem;
+
         border: 1.5px solid var(--paper, #F1ECE0);
+
         transition: all .2s;
     }
+
+
     .btn-folder-cta-secondary:hover {
+
         background: var(--paper, #F1ECE0);
+
         color: var(--ink, #22221F);
     }
 
-    /* photo cards */
-    .photo-card {
-        background: #ffffff;
-        border: 1px solid var(--line, #D6CCB4);
-        border-radius: 0 12px 12px 12px;
-        box-shadow: 0 8px 24px rgba(34,34,31,.08);
-        overflow: hidden;
-        transition: transform 0.25s ease, box-shadow 0.3s ease;
-    }
-    .photo-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 16px 40px rgba(34,34,31,.12);
+
+    /* =========================================
+       AI BUTTON
+    ========================================= */
+
+    .btn-ai-analysis {
+
+        background: var(--gold, #C18B2E);
+
+        color: #22221F;
+
+        font-family: 'Inter', sans-serif;
+
+        font-weight: 600;
+
+        border-radius: 999px;
+
+        padding: .7rem 1.8rem;
+
+        border: none;
+
+        transition: background .2s;
     }
 
-    .photo-image-wrapper {
-        position: relative;
+
+    .btn-ai-analysis:hover {
+
+        background: #d9a443;
+
+        color: #22221F;
+    }
+
+
+    .btn-ai-analysis:disabled {
+
+        opacity: .5;
+
+        cursor: not-allowed;
+    }
+
+
+    /* =========================================
+       AI SUMMARY
+    ========================================= */
+
+    .ai-summary {
+
+        padding: 1rem 1.5rem;
+
+        background: #fff;
+
+        border: 1px solid var(--line, #D6CCB4);
+
+        border-left: 4px solid var(--gold, #C18B2E);
+
+        border-radius: 12px;
+
+        color: var(--ink, #22221F);
+
+        box-shadow: 0 4px 12px rgba(34, 34, 31, .06);
+    }
+
+
+    .ai-summary-icon {
+
+        width: 44px;
+
+        height: 44px;
+
+        border-radius: 50%;
+
+        background: #f8edcf;
+
+        color: #9b6a15;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        font-size: 1.3rem;
+
+        flex-shrink: 0;
+    }
+
+
+    /* =========================================
+       PHOTO CARD
+    ========================================= */
+
+    .photo-card {
+
+        background: #fff;
+
+        border: 1px solid var(--line, #D6CCB4);
+
+        border-radius: 0 12px 12px 12px;
+
+        box-shadow: 0 8px 24px rgba(34, 34, 31, .08);
+
         overflow: hidden;
+
+        transition:
+            transform .25s ease,
+            box-shadow .3s ease;
+    }
+
+
+    .photo-card:hover {
+
+        transform: translateY(-4px);
+
+        box-shadow: 0 16px 40px rgba(34, 34, 31, .12);
+    }
+
+
+    /* =========================================
+       PHOTO
+    ========================================= */
+
+    .photo-image-wrapper {
+
+        position: relative;
+
+        overflow: hidden;
+
         background: var(--paper-deep, #E7DFCC);
     }
 
+
     .photo-image {
+
         width: 100%;
+
         height: 220px;
+
         object-fit: cover;
+
         cursor: pointer;
-        transition: transform 0.3s ease;
+
+        transition: transform .3s ease;
+
         display: block;
     }
+
+
     .photo-card:hover .photo-image {
+
         transform: scale(1.02);
     }
 
+
+    /* =========================================
+       PHOTO OVERLAY
+    ========================================= */
+
     .photo-overlay {
+
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(34,34,31,.4);
+
+        inset: 0;
+
+        background: rgba(34, 34, 31, .4);
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         opacity: 0;
-        transition: opacity 0.25s ease;
+
+        transition: opacity .25s ease;
     }
+
+
     .photo-card:hover .photo-overlay {
+
         opacity: 1;
     }
+
+
     .photo-overlay .btn {
-        background: rgba(255,255,255,.92);
+
+        background: rgba(255, 255, 255, .92);
+
         color: var(--ink, #22221F);
+
         font-weight: 600;
+
         border: none;
+
         backdrop-filter: blur(4px);
     }
+
+
     .photo-overlay .btn:hover {
+
         background: #fff;
     }
 
-    .photo-card-footer {
-        padding: 0.8rem 1rem;
-        background: #fff;
+
+    /* =========================================
+       AI ANALYSIS PANEL
+    ========================================= */
+
+    .ai-analysis-panel {
+
+        padding: 1rem;
+
+        background: #fffdf8;
+
         border-top: 1px solid var(--line, #D6CCB4);
+
+        color: var(--ink, #22221F);
+
+        font-size: .85rem;
+    }
+
+
+    .ai-not-analyzed {
+
+        color: var(--ink-soft, #6B655A);
+
+        background: #faf7ef;
+    }
+
+
+    .ai-not-analyzed i {
+
+        color: var(--gold, #C18B2E);
+
+        font-size: 1rem;
+    }
+
+
+    .ai-not-analyzed small {
+
+        display: block;
+
+        margin-top: .35rem;
+
+        font-size: .72rem;
+
+        color: var(--ink-soft, #6B655A);
+    }
+
+
+    /* =========================================
+       ANALYSIS METRICS
+    ========================================= */
+
+    .analysis-metric {
+
+        color: var(--ink-soft, #6B655A);
+    }
+
+
+    .analysis-metric strong {
+
+        color: var(--ink, #22221F);
+    }
+
+
+    .analysis-metric .progress {
+
+        height: 7px;
+
+        background: #e9e3d6;
+
+        border-radius: 20px;
+
+        overflow: hidden;
+    }
+
+
+    .analysis-metric .progress-bar {
+
+        border-radius: 20px;
+    }
+
+
+    .analysis-dimensions {
+
+        color: var(--ink-soft, #6B655A);
+
+        font-size: .8rem;
+    }
+
+
+    .analysis-note {
+
+        font-size: .72rem;
+
+        line-height: 1.4;
+
+        color: var(--ink-soft, #6B655A);
+    }
+
+
+    /* =========================================
+       PHOTO FOOTER
+    ========================================= */
+
+    .photo-card-footer {
+
+        padding: .8rem 1rem;
+
+        background: #fff;
+
+        border-top: 1px solid var(--line, #D6CCB4);
+
         text-align: center;
     }
 
+
+    /* =========================================
+       DELETE BUTTON
+    ========================================= */
+
     .btn-photo-delete {
+
         background: transparent;
+
         color: var(--coral, #D9512F);
+
         border: 1px solid var(--coral, #D9512F);
+
         border-radius: 999px;
+
         font-weight: 600;
+
         font-size: .8rem;
+
         padding: .3rem 1.2rem;
+
         transition: all .2s;
     }
+
+
     .btn-photo-delete:hover {
+
         background: var(--coral, #D9512F);
+
         color: #fff;
     }
 
-    /* alert styling */
+
+    /* =========================================
+       ALERTS
+    ========================================= */
+
     .folder-alert {
+
         border: 1px solid var(--line, #D6CCB4);
+
         border-radius: 12px;
+
         background: #fff;
+
         color: var(--ink, #22221F);
+
         font-family: 'Inter', sans-serif;
-        box-shadow: 0 4px 12px rgba(34,34,31,.06);
+
+        box-shadow: 0 4px 12px rgba(34, 34, 31, .06);
     }
+
+
     .folder-alert.alert-success {
+
         border-left: 4px solid var(--moss, #56725A);
     }
+
+
     .folder-alert.alert-danger {
+
         border-left: 4px solid var(--coral, #D9512F);
     }
 
+
+    /* =========================================
+       EMPTY STATE
+    ========================================= */
+
     .folder-empty-state {
-        background: #ffffff;
+
+        background: #fff;
+
         border: 1px solid var(--line, #D6CCB4);
+
         border-radius: 14px;
+
         padding: 3.5rem 2rem;
-        box-shadow: 0 18px 38px -18px rgba(34,34,31,.25);
+
+        box-shadow: 0 18px 38px -18px rgba(34, 34, 31, .25);
     }
 
+
     .folder-empty-title {
+
         font-family: 'Fraunces', serif;
+
         font-weight: 600;
+
         color: var(--ink, #22221F);
     }
 
+
     .folder-meta {
+
         color: var(--ink-soft, #6B655A);
+
         font-size: .85rem;
+
         font-family: 'Inter', sans-serif;
     }
 
-    /* modal */
+
+    /* =========================================
+       MODAL
+    ========================================= */
+
     .folder-modal {
+
         border: 1px solid var(--line, #D6CCB4);
+
         border-radius: 14px;
+
         background: #fff;
     }
 
+
     .folder-modal-title {
+
         font-family: 'Fraunces', serif;
+
         font-weight: 600;
+
         color: var(--ink, #22221F);
     }
 
-    /* responsive */
+    .ai-quality-score {
+        color: var(--ink-soft, #6B655A);
+    }
+
+    .ai-quality-score strong {
+        color: var(--ink, #22221F);
+    }
+
+    .ai-quality-score .progress {
+        height: 8px;
+        background: #e9e3d6;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .ai-quality-score .progress-bar {
+        border-radius: 20px;
+    }
+
+    /* =========================================
+   PHOTO FILTER PANEL
+========================================= */
+
+    .photo-filter-panel {
+
+        background: #fff;
+
+        border: 1px solid var(--line, #D6CCB4);
+
+        border-radius: 14px;
+
+        padding: 1.2rem 1.5rem;
+
+        box-shadow: 0 6px 18px rgba(34, 34, 31, .06);
+    }
+
+
+    .filter-title {
+
+        font-family: 'Fraunces', serif;
+
+        font-weight: 600;
+
+        color: var(--ink, #22221F);
+    }
+
+
+    .filter-title i {
+
+        color: var(--gold, #C18B2E);
+    }
+
+
+    .filter-description {
+
+        color: var(--ink-soft, #6B655A);
+
+        font-size: .78rem;
+    }
+
+
+    /* =========================================
+   FILTER BUTTONS
+========================================= */
+
+    .photo-filter-buttons {
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: .5rem;
+    }
+
+
+    .photo-filter-btn {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: .15rem;
+
+        padding: .55rem 1rem;
+
+        border-radius: 999px;
+
+        border: 1px solid var(--line, #D6CCB4);
+
+        background: #fff;
+
+        color: var(--ink, #22221F);
+
+        text-decoration: none;
+
+        font-size: .82rem;
+
+        font-weight: 600;
+
+        transition: all .2s ease;
+    }
+
+
+    .photo-filter-btn:hover {
+
+        background: #f7f3e9;
+
+        color: var(--ink, #22221F);
+
+        transform: translateY(-1px);
+    }
+
+
+    /* ACTIVE */
+
+    .photo-filter-btn.active {
+
+        background: var(--ink, #22221F);
+
+        color: #fff;
+
+        border-color: var(--ink, #22221F);
+    }
+
+
+    /* COUNT */
+
+    .filter-count {
+
+        min-width: 22px;
+
+        height: 22px;
+
+        padding: 0 .35rem;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 50%;
+
+        background: #eee8da;
+
+        color: var(--ink, #22221F);
+
+        font-size: .7rem;
+
+        margin-left: .2rem;
+    }
+
+
+    .photo-filter-btn.active .filter-count {
+
+        background: rgba(255, 255, 255, .2);
+
+        color: #fff;
+    }
+
+
+    /* RECOMMENDED */
+
+    .recommended-filter i {
+
+        color: #C18B2E;
+    }
+
+
+    /* REVIEW */
+
+    .review-filter i {
+
+        color: #D39B18;
+    }
+
+
+    /* NEEDS REVIEW */
+
+    .needs-review-filter i {
+
+        color: #D9512F;
+    }
+
+
+    .photo-filter-btn.active i {
+
+        color: inherit;
+    }
+
+    /* =========================================
+   AI FACE GROUPING
+========================================= */
+
+    .face-grouping-panel {
+
+        background: #fff;
+
+        border: 1px solid var(--line, #D6CCB4);
+
+        border-left: 4px solid var(--gold, #C18B2E);
+
+        border-radius: 14px;
+
+        padding: 1.5rem;
+
+        box-shadow: 0 8px 24px rgba(34, 34, 31, .07);
+    }
+
+
+    .face-grouping-icon {
+
+        width: 48px;
+
+        height: 48px;
+
+        border-radius: 12px;
+
+        background: #f8edcf;
+
+        color: #9b6a15;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        font-size: 1.35rem;
+
+        flex-shrink: 0;
+    }
+
+
+    .face-grouping-title {
+
+        font-family: 'Fraunces', serif;
+
+        font-weight: 600;
+
+        color: var(--ink, #22221F);
+    }
+
+
+    .face-grouping-description {
+
+        color: var(--ink-soft, #6B655A);
+
+        font-size: .82rem;
+    }
+
+
+    /* =========================================
+   GROUP BUTTON
+========================================= */
+
+    .btn-face-grouping {
+
+        background: var(--gold, #C18B2E);
+
+        color: #22221F;
+
+        border: none;
+
+        border-radius: 999px;
+
+        padding: .7rem 1.5rem;
+
+        font-family: 'Inter', sans-serif;
+
+        font-weight: 600;
+
+        transition: all .2s ease;
+    }
+
+
+    .btn-face-grouping:hover {
+
+        background: #d9a443;
+
+        color: #22221F;
+
+        transform: translateY(-1px);
+    }
+
+
+    .btn-face-grouping:disabled {
+
+        opacity: .5;
+
+        cursor: not-allowed;
+
+        transform: none;
+    }
+
+
+    /* =========================================
+   FACE STATISTICS
+========================================= */
+
+    .face-grouping-stats {
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: .8rem;
+    }
+
+
+    .face-stat {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: .7rem;
+
+        padding: .7rem 1rem;
+
+        background: #faf7ef;
+
+        border: 1px solid var(--line, #D6CCB4);
+
+        border-radius: 10px;
+    }
+
+
+    .face-stat-icon {
+
+        width: 36px;
+
+        height: 36px;
+
+        border-radius: 9px;
+
+        background: #eee8da;
+
+        color: var(--ink, #22221F);
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+    }
+
+
+    .face-stat strong {
+
+        display: block;
+
+        color: var(--ink, #22221F);
+
+        font-size: 1rem;
+    }
+
+
+    .face-stat span {
+
+        display: block;
+
+        color: var(--ink-soft, #6B655A);
+
+        font-size: .72rem;
+    }
+
+
+    /* =========================================
+   EMPTY STATE
+========================================= */
+
+    .face-grouping-empty {
+
+        padding: .9rem 1rem;
+
+        background: #faf7ef;
+
+        border: 1px dashed var(--line, #D6CCB4);
+
+        border-radius: 10px;
+
+        color: var(--ink-soft, #6B655A);
+
+        font-size: .8rem;
+    }
+
+
+    /* =========================================
+   FACE GROUPS CONTAINER
+========================================= */
+
+    .face-groups-container {
+
+        background: #fff;
+
+        border: 1px solid var(--line, #D6CCB4);
+
+        border-radius: 14px;
+
+        padding: 1.5rem;
+
+        box-shadow: 0 6px 18px rgba(34, 34, 31, .06);
+    }
+
+
+    /* =========================================
+   FACE GROUP CARD
+========================================= */
+
+    .face-group-card {
+
+        background: #fffdf8;
+
+        border: 1px solid var(--line, #D6CCB4);
+
+        border-radius: 12px;
+
+        transition:
+            transform .2s ease,
+            box-shadow .2s ease;
+    }
+
+
+    .face-group-card:hover {
+
+        transform: translateY(-3px);
+
+        box-shadow: 0 10px 25px rgba(34, 34, 31, .09);
+    }
+
+
+    .face-group-card-body {
+
+        padding: 1.1rem;
+    }
+
+
+    .face-group-avatar {
+
+        width: 46px;
+
+        height: 46px;
+
+        border-radius: 50%;
+
+        background: #f8edcf;
+
+        color: #9b6a15;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        font-size: 1.15rem;
+
+        flex-shrink: 0;
+    }
+
+
+    .face-group-name {
+
+        color: var(--ink, #22221F);
+
+        font-family: 'Inter', sans-serif;
+
+        font-weight: 700;
+    }
+
+
+    .face-group-count {
+
+        color: var(--ink-soft, #6B655A);
+
+        font-size: .75rem;
+    }
+
+
+    /* =========================================
+   FACE GROUPING MOBILE
+========================================= */
+
     @media (max-width: 576px) {
+
+        .face-grouping-panel {
+
+            padding: 1.1rem;
+        }
+
+        .face-grouping-panel .btn-face-grouping {
+
+            width: 100%;
+
+            margin-top: .5rem;
+        }
+
+        .face-grouping-panel>div {
+
+            width: 100%;
+        }
+
+        .face-grouping-stats {
+
+            width: 100%;
+        }
+
+        .face-stat {
+
+            flex: 1;
+
+            min-width: 140px;
+        }
+
+    }
+
+    /* MOBILE */
+
+    @media (max-width: 768px) {
+
+        .photo-filter-panel {
+
+            padding: 1rem;
+        }
+
+        .photo-filter-buttons {
+
+            width: 100%;
+        }
+
+        .photo-filter-btn {
+
+            flex: 1;
+
+            justify-content: center;
+
+            min-width: 140px;
+        }
+
+    }
+
+    /* =========================================
+       MOBILE
+    ========================================= */
+
+    @media (max-width: 576px) {
+
         .folder-header {
+
             text-align: center;
         }
+
+
         .folder-meta-light {
+
             justify-content: center;
         }
-        .btn-folder-cta,
-        .btn-folder-cta-secondary {
+
+
+        .folder-actions {
+
             width: 100%;
-            text-align: center;
+
+            justify-content: center;
         }
+
+
+        .folder-actions>a,
+        .folder-actions>form {
+
+            width: 100%;
+        }
+
+
+        .folder-actions form button {
+
+            width: 100%;
+        }
+
+
         .photo-image {
+
             height: 180px;
         }
+
     }
 </style>
+
+
+<!-- ================================================= -->
+<!-- JAVASCRIPT -->
+<!-- ================================================= -->
+
+<script>
+
+    document.querySelectorAll(
+        '[data-progress]'
+    ).forEach(progressBar => {
+
+        const progress = Number(
+            progressBar.dataset.progress
+        );
+
+        if (Number.isFinite(progress)) {
+
+            progressBar.style.width =
+                `${Math.min(
+                    100,
+                    Math.max(
+                        0,
+                        progress
+                    )
+                )}%`;
+
+        }
+
+    });
+        function getCookie(name) {
+
+        let cookieValue = null;
+
+        if (document.cookie && document.cookie !== "") {
+
+            const cookies = document.cookie.split(";");
+
+            for (let cookie of cookies) {
+
+                cookie = cookie.trim();
+
+                if (
+                    cookie.substring(
+                        0,
+                        name.length + 1
+                    ) === name + "="
+                ) {
+
+                    cookieValue = decodeURIComponent(
+                        cookie.substring(
+                            name.length + 1
+                        )
+                    );
+
+                    break;
+                }
+            }
+        }
+
+        return cookieValue;
+    }
+
+</script>
+
 
 {% endblock %}

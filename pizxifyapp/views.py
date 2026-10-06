@@ -16,6 +16,8 @@ from django.shortcuts import render, redirect
 
 from .models import UserRegister
 import re
+
+from ai_features.models import PhotoAnalysis
 # Create your views here.
 
 #Index
@@ -612,39 +614,276 @@ def upload_folder_photos(request, id):
         {'folder': folder}
     )
 
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .models import PhotoFolder, FolderPhoto, PhotoLike
+from django.shortcuts import render, redirect, get_object_or_404
+
+from .models import (
+    PhotoFolder,
+    FolderPhoto,
+    PhotoLike,
+    Album,
+)
+
+from ai_features.models import (
+    PhotoAnalysis,
+    FaceGroup,
+    PhotoFace,
+)
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+
+from .models import (
+    PhotoFolder,
+    FolderPhoto,
+    PhotoLike,
+    Album,
+)
+
+from ai_features.models import (
+    PhotoAnalysis,
+    FaceGroup,
+    PhotoFace,
+)
 
 
 def folder_details(request, id):
 
-    if request.session.get('user_role') != 'photographer':
-        return redirect('login')
+    # ---------------------------------------
+    # CHECK USER ROLE
+    # ---------------------------------------
 
-    folder = PhotoFolder.objects.get(id=id)
+    if request.session.get("user_role") != "photographer":
+        return redirect("login")
 
-    photos = FolderPhoto.objects.filter(
-        folder=folder
-    ).order_by('id')
+    # ---------------------------------------
+    # GET FOLDER
+    # ---------------------------------------
+
+    folder = get_object_or_404(
+        PhotoFolder,
+        id=id,
+        created_by_id=request.session.get("user_id")
+    )
+
+    # ---------------------------------------
+    # GET ALL PHOTOS
+    # ---------------------------------------
+
+    all_photos = list(
+        FolderPhoto.objects
+        .filter(folder=folder)
+        .order_by("id")
+    )
+
+    # ---------------------------------------
+    # GET AI ANALYSIS
+    # ---------------------------------------
+
+    analysis_by_photo = {
+        analysis.photo_id: analysis
+        for analysis in PhotoAnalysis.objects.filter(
+            photo__in=all_photos
+        )
+    }
+
+    # ---------------------------------------
+    # ATTACH ANALYSIS TO PHOTO
+    # ---------------------------------------
+
+    for photo in all_photos:
+
+        photo.analysis_result = (
+            analysis_by_photo.get(photo.id)
+        )
+
+    # ---------------------------------------
+    # GET PHOTO FILTER
+    # ---------------------------------------
+
+    current_filter = request.GET.get(
+        "filter",
+        "all"
+    )
+
+    # ---------------------------------------
+    # FILTER PHOTOS
+    # ---------------------------------------
+
+    if current_filter == "recommended":
+
+        photos = [
+            photo
+            for photo in all_photos
+            if photo.analysis_result
+            and photo.analysis_result.recommendation
+            == "Recommended"
+        ]
+
+    elif current_filter == "review":
+
+        photos = [
+            photo
+            for photo in all_photos
+            if photo.analysis_result
+            and photo.analysis_result.recommendation
+            == "Review"
+        ]
+
+    elif current_filter == "needs_review":
+
+        photos = [
+            photo
+            for photo in all_photos
+            if photo.analysis_result
+            and photo.analysis_result.recommendation
+            == "Needs Review"
+        ]
+
+    else:
+
+        photos = all_photos
+
+    # ---------------------------------------
+    # AI ANALYSIS COUNTS
+    # ---------------------------------------
+
+    analyzed_count = sum(
+        1
+        for photo in all_photos
+        if photo.analysis_result
+    )
+
+    recommended_count = sum(
+        1
+        for photo in all_photos
+        if photo.analysis_result
+        and photo.analysis_result.recommendation
+        == "Recommended"
+    )
+
+    review_count = sum(
+        1
+        for photo in all_photos
+        if photo.analysis_result
+        and photo.analysis_result.recommendation
+        == "Review"
+    )
+
+    needs_review_count = sum(
+        1
+        for photo in all_photos
+        if photo.analysis_result
+        and photo.analysis_result.recommendation
+        == "Needs Review"
+    )
+
+    # ---------------------------------------
+    # ALBUMS
+    # ---------------------------------------
 
     albums = Album.objects.filter(
         folder=folder
-    ).order_by('id')
+    ).order_by("id")
+
+    # ---------------------------------------
+    # LIKES
+    # ---------------------------------------
 
     liked_count = PhotoLike.objects.filter(
         photo__folder=folder
     ).count()
 
+    # ---------------------------------------
+    # AI FACE GROUPING
+    # ---------------------------------------
+
+    face_groups = (
+        FaceGroup.objects
+        .filter(folder=folder)
+        .prefetch_related("faces")
+        .order_by("id")
+    )
+
+    # ---------------------------------------
+    # TOTAL DETECTED FACES
+    # ---------------------------------------
+
+    face_count = PhotoFace.objects.filter(
+        photo__folder=folder
+    ).count()
+
+    # ---------------------------------------
+    # PEOPLE GROUP COUNT
+    # ---------------------------------------
+    # Exclude "Unknown" because Unknown
+    # is not an actual identified person.
+
+    people_group_count = face_groups.exclude(
+        name="Unknown"
+    ).count()
+
+    # ---------------------------------------
+    # UNKNOWN FACE COUNT
+    # ---------------------------------------
+
+    unknown_group = face_groups.filter(
+        name="Unknown"
+    ).first()
+
+    if unknown_group:
+        unknown_face_count = unknown_group.faces.count()
+    else:
+        unknown_face_count = 0
+
+    # ---------------------------------------
+    # CONTEXT
+    # ---------------------------------------
+
+    context = {
+
+        # Folder
+        "folder": folder,
+
+        # Photos
+        "photos": photos,
+
+        "all_photos_count": len(all_photos),
+
+        # Likes
+        "liked_count": liked_count,
+
+        # Albums
+        "albums": albums,
+
+        # AI Photo Analysis
+        "analyzed_count": analyzed_count,
+
+        "recommended_count": recommended_count,
+
+        "review_count": review_count,
+
+        "needs_review_count": needs_review_count,
+
+        "current_filter": current_filter,
+
+        # AI Face Grouping
+        "face_count": face_count,
+
+        "face_groups": face_groups,
+
+        "people_group_count": people_group_count,
+
+        "unknown_face_count": unknown_face_count,
+    }
+
+    # ---------------------------------------
+    # RENDER
+    # ---------------------------------------
+
     return render(
         request,
-        'photographer/folder_details.html',
-        {
-            'folder': folder,
-            'photos': photos,
-            'liked_count': liked_count,
-            'albums': albums
-        }
+        "photographer/folder_details.html",
+        context
     )
 
 def delete_photo(request, id):
@@ -668,52 +907,238 @@ def delete_photo(request, id):
         id=folder_id
     )
 
-import json
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+
+from .models import PhotoFolder, FolderPhoto, Album, AlbumPhoto
+
+
 def create_album(request, folder_id):
+
+    # --------------------------------------------------
+    # Photographer access
+    # --------------------------------------------------
 
     if request.session.get('user_role') != 'photographer':
         return redirect('login')
 
-    folder = PhotoFolder.objects.get(id=folder_id)
+    user_id = request.session.get('user_id')
 
-    liked_photos = FolderPhoto.objects.filter(
-        folder=folder,
-        photolike__isnull=False
-    ).distinct()
+    # --------------------------------------------------
+    # Get folder owned by logged-in photographer
+    # --------------------------------------------------
+
+    folder = get_object_or_404(
+        PhotoFolder,
+        id=folder_id,
+        created_by_id=user_id
+    )
+
+    # --------------------------------------------------
+    # Client liked photos
+    # --------------------------------------------------
+
+    liked_photos = list(
+        FolderPhoto.objects.filter(
+            folder=folder,
+            photolike__isnull=False
+        )
+        .distinct()
+        .order_by('id')
+    )
+
+    # --------------------------------------------------
+    # Get AI analysis for liked photos
+    # --------------------------------------------------
+
+    analysis_by_photo = {
+        analysis.photo_id: analysis
+        for analysis in PhotoAnalysis.objects.filter(
+            photo__in=liked_photos
+        )
+    }
+
+    # Attach AI analysis to each liked photo
+    for photo in liked_photos:
+        photo.analysis_result = analysis_by_photo.get(photo.id)
+
+    # --------------------------------------------------
+    # AI recommended photos
+    # --------------------------------------------------
+
+    recommended_photos = [
+        photo
+        for photo in liked_photos
+        if (
+            photo.analysis_result
+            and
+            photo.analysis_result.recommendation == 'Recommended'
+        )
+    ]
+
+    # ==================================================
+    # POST - CREATE ALBUM
+    # ==================================================
 
     if request.method == "POST":
 
-        title = request.POST.get('title')
-        description = request.POST.get('description')
-        total_pages = int(request.POST.get('total_pages'))
+        # --------------------------------------------------
+        # Album details
+        # --------------------------------------------------
 
-        # The exact order the photographer clicked, as a comma-separated string of IDs
-        ordered_raw = request.POST.get('ordered_photo_ids', '')
-        selected_photos = [pid for pid in ordered_raw.split(',') if pid]
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+
+        # --------------------------------------------------
+        # Validate total pages
+        # --------------------------------------------------
+
+        try:
+            total_pages = int(
+                request.POST.get('total_pages', 0)
+            )
+        except (TypeError, ValueError):
+            total_pages = 0
+
+        if total_pages < 1:
+
+            messages.error(
+                request,
+                "Please enter a valid number of pages."
+            )
+
+            return redirect(
+                'create_album',
+                folder_id=folder.id
+            )
+
+        # --------------------------------------------------
+        # Get selected photo order
+        # --------------------------------------------------
+
+        ordered_raw = request.POST.get(
+            'ordered_photo_ids',
+            ''
+        )
+
+        selected_photos = [
+            photo_id
+            for photo_id in ordered_raw.split(',')
+            if photo_id
+        ]
+
+        # --------------------------------------------------
+        # Valid photo IDs
+        #
+        # Only liked photos can be selected
+        # --------------------------------------------------
+
+        valid_photo_ids = {
+            str(photo.id)
+            for photo in liked_photos
+        }
+
+        selected_photos = [
+            photo_id
+            for photo_id in selected_photos
+            if photo_id in valid_photo_ids
+        ]
+
+        # --------------------------------------------------
+        # At least one photo required
+        # --------------------------------------------------
+
+        if not selected_photos:
+
+            messages.error(
+                request,
+                "Please select at least one photo."
+            )
+
+            return redirect(
+                'create_album',
+                folder_id=folder.id
+            )
+
+        # --------------------------------------------------
+        # Page settings
+        # --------------------------------------------------
 
         photos_per_page = {}
+
+        total_selected = 0
+
         for i in range(1, total_pages + 1):
-            photos_per_page[str(i)] = int(request.POST.get(f'page_{i}', 1))
+
+            try:
+                count = int(
+                    request.POST.get(
+                        f'page_{i}',
+                        1
+                    )
+                )
+            except (TypeError, ValueError):
+                count = 1
+
+            if count < 1:
+                count = 1
+
+            photos_per_page[str(i)] = count
+
+            total_selected += count
+
+        # --------------------------------------------------
+        # Make sure page layout matches selected photos
+        # --------------------------------------------------
+
+        if total_selected != len(selected_photos):
+
+            messages.error(
+                request,
+                f"Page layout contains {total_selected} photo slots, "
+                f"but {len(selected_photos)} photos are selected. "
+                f"Please adjust the page settings."
+            )
+
+            return redirect(
+                'create_album',
+                folder_id=folder.id
+            )
+
+        # ==================================================
+        # CREATE ALBUM
+        # ==================================================
 
         album = Album.objects.create(
             title=title,
             description=description,
             folder=folder,
-            created_by_id=request.session['user_id'],
+            created_by_id=user_id,
             total_pages=total_pages,
             photos_per_page=photos_per_page,
             photo_ids=",".join(selected_photos)
         )
 
+        # ==================================================
+        # CREATE ALBUM PHOTO RECORDS
+        # ==================================================
+
         position = 1
         index = 0
 
-        for page_no in range(1, total_pages + 1):
+        for page_no in range(
+            1,
+            total_pages + 1
+        ):
 
-            count = int(photos_per_page.get(str(page_no), 1))
+            count = photos_per_page.get(
+                str(page_no),
+                1
+            )
 
-            # slice preserves selection order exactly — no sorting applied anywhere
-            page_photos = selected_photos[index:index + count]
+            page_photos = selected_photos[
+                index:index + count
+            ]
 
             for photo_id in page_photos:
 
@@ -723,22 +1148,43 @@ def create_album(request, folder_id):
                     page_number=page_no,
                     position=position,
                     rotation=0,
-                    crop_x=0, crop_y=0, crop_width=0, crop_height=0
+                    crop_x=0,
+                    crop_y=0,
+                    crop_width=0,
+                    crop_height=0
                 )
 
                 position += 1
 
             index += count
 
-        messages.success(request, 'Album Created Successfully')
-        return redirect('album_designer', album.id)
+        # --------------------------------------------------
+        # Success
+        # --------------------------------------------------
+
+        messages.success(
+            request,
+            'Album Created Successfully'
+        )
+
+        return redirect(
+            'album_designer',
+            album.id
+        )
+
+    # ==================================================
+    # GET - CREATE ALBUM PAGE
+    # ==================================================
 
     return render(
         request,
         'photographer/create_album.html',
-        {'folder': folder, 'liked_photos': liked_photos}
+        {
+            'folder': folder,
+            'liked_photos': liked_photos,
+            'recommended_photos': recommended_photos,
+        }
     )
-
 
 import math
 from django.shortcuts import render, redirect

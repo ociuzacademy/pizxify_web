@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'pizxifyapp'
+    'pizxifyapp',
+    'ai_features',
 ]
 
 MIDDLEWARE = [
