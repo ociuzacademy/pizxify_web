@@ -139,7 +139,8 @@
 
                             {% csrf_token %}
 
-                            <button type="submit" class="btn btn-ai-analysis px-4" {% if not photos %}disabled{% endif %}>
+                            <button type="submit" class="btn btn-ai-analysis px-4" {% if not photos %}disabled{% endif
+                                %}>
 
                                 <i class="bi bi-stars me-2"></i>
 
@@ -194,16 +195,43 @@
                         <!-- RIGHT SIDE -->
                         <div>
 
-                            <form method="post" action="{% url 'group_faces' folder.id %}" onsubmit="return confirm(
-        'AI will analyze all photos in this folder and replace any previous face grouping. Continue?'
-    );">
-                                {% csrf_token %}
+                            <div class="d-flex flex-wrap gap-2">
 
-                                <button type="submit" class="btn btn-face-grouping" {% if not photos %}disabled{% endif %}>
-                                    <i class="bi bi-stars me-2"></i>
-                                    Group Faces with AI
-                                </button>
-                            </form>
+                                <!-- GROUP FACES -->
+                                <form method="post" action="{% url 'group_faces' folder.id %}" onsubmit="return confirm(
+              'AI will analyze all photos in this folder and replace any previous face grouping. Continue?'
+          );">
+
+                                    {% csrf_token %}
+
+                                    <button type="submit" class="btn btn-face-grouping" {% if not photos %}disabled{% endif %}>
+
+                                        <i class="bi bi-people-fill me-2"></i>
+                                        Group Faces with AI
+
+                                    </button>
+
+                                </form>
+
+
+                                <!-- CLASSIFY PHOTOS -->
+                                <form method="post" action="{% url 'classify_folder_photos' folder.id %}" onsubmit="return confirm(
+              'AI will analyze all photos in this folder using Gemini. Continue?'
+          );">
+
+                                    {% csrf_token %}
+
+                                    <button type="submit" class="btn btn-ai-classify" {% if not photos %}disabled{%
+                                        endif %}>
+
+                                        <i class="bi bi-stars me-2"></i>
+                                        Classify Photos with AI
+
+                                    </button>
+
+                                </form>
+
+                            </div>
 
                         </div>
 
@@ -270,7 +298,7 @@
                         Click
                         <strong>Group Faces with AI</strong>
                         to analyze this folder.
-                            
+
                     </div>
 
                     {% endif %}
@@ -2332,7 +2360,7 @@
         }
 
     });
-        function getCookie(name) {
+    function getCookie(name) {
 
         let cookieValue = null;
 
