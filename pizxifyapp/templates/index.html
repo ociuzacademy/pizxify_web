@@ -359,7 +359,7 @@ a{ text-decoration:none; }
 </nav>
 <!-- Messages -->
 {% if messages %}
-<div class="container mt-3">
+<div class="container mt-3" id="django-messages-container">
     {% for message in messages %}
         <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show"
              role="alert">
@@ -373,6 +373,29 @@ a{ text-decoration:none; }
         </div>
     {% endfor %}
 </div>
+<script>
+    setTimeout(function () {
+        const messageContainer = document.getElementById('django-messages-container');
+        if (messageContainer) {
+            const alerts = messageContainer.querySelectorAll('.alert');
+            alerts.forEach(function (alert) {
+                if (typeof bootstrap !== 'undefined' && bootstrap.Alert) {
+                    const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                    if (bsAlert) {
+                        bsAlert.close();
+                        return;
+                    }
+                }
+                alert.classList.remove('show');
+                setTimeout(function () {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                }, 300);
+            });
+        }
+    }, 5000);
+</script>
 {% endif %}
 {% block content %}
 

@@ -2,2398 +2,1294 @@
 
 {% block content %}
 
-<div class="folder-details-wrapper">
+<div class="fd-wrapper">
     <div class="container-fluid px-4 py-5">
 
-        <!-- MESSAGES -->
+        <!-- ===================== MESSAGES ===================== -->
         {% if messages %}
         <div class="row mb-4">
             <div class="col-12">
                 {% for message in messages %}
-                <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% else %}success{% endif %} alert-dismissible fade show folder-alert"
+                <div class="alert fd-alert fd-alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% else %}success{% endif %} alert-dismissible fade show"
                     role="alert">
-
-                    <i class="bi
-                        {% if message.tags == 'error' %}
-                            bi-exclamation-triangle-fill
-                        {% elif message.tags == 'warning' %}
-                            bi-exclamation-circle-fill
-                        {% else %}
-                            bi-check-circle-fill
-                        {% endif %}
-                        me-2">
-                    </i>
-
+                    <i class="bi {% if message.tags == 'error' %}bi-exclamation-triangle-fill{% elif message.tags == 'warning' %}bi-exclamation-circle-fill{% elif message.tags == 'info' %}bi-info-circle-fill{% else %}bi-check-circle-fill{% endif %} me-2"></i>
                     {{ message }}
-
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-                    </button>
-
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
 
+        <!-- ===================== HEADER ===================== -->
+        <header class="fd-header mb-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
 
-        <!-- ========================================= -->
-        <!-- FOLDER HEADER -->
-        <!-- ========================================= -->
-
-        <div class="row mb-5">
-
-            <div class="col-12">
-
-                <div
-                    class="folder-header d-flex flex-wrap align-items-center justify-content-between bg-folder-cover p-4 p-lg-5 rounded-4 shadow-lg">
-
-                    <!-- FOLDER INFORMATION -->
-
-                    <div>
-
-                        <span class="folder-eyebrow">
-
-                            <i class="bi bi-folder-fill me-1"></i>
-
-                            {{ folder.folder_id }}
-
-                        </span>
-
-
-                        <h1 class="folder-heading mb-2">
-
-                            {{ folder.folder_id }}
-
-                        </h1>
-
-
-                        <div class="d-flex flex-wrap gap-4 folder-meta-light mt-2">
-
-                            <!-- CREATED BY -->
-
-                            <span>
-
-                                <i class="bi bi-person me-1"></i>
-
-                                {{ folder.created_by.full_name }}
-
-                            </span>
-
-
-                            <!-- PHOTO COUNT -->
-
-                            <span>
-
-                                <i class="bi bi-images me-1"></i>
-
-                                {{ photos|length }} photos
-
-                            </span>
-
-
-                            <!-- LIKES -->
-
-                            <span>
-
-                                <i class="bi bi-heart-fill me-1" style="color: var(--coral);">
-                                </i>
-
-                                {{ liked_count }} likes
-
-                            </span>
-
-                        </div>
-
+                <div>
+                    <span class="fd-eyebrow"><i class="bi bi-folder-fill me-1"></i> Folder</span>
+                    <h1 class="fd-title">{{ folder.folder_id }}</h1>
+                    <div class="fd-meta">
+                        <span><i class="bi bi-person me-1"></i>{{ folder.created_by.full_name }}</span>
+                        <span><i class="bi bi-images me-1"></i>{{ all_photos_count|default:photos|length }} photos</span>
+                        <span><i class="bi bi-heart-fill me-1 fd-heart"></i>{{ liked_count|default:0 }} likes</span>
                     </div>
+                </div>
 
+                <div class="fd-header-actions">
+                    <a href="{% url 'upload_folder_photos' folder.id %}" class="btn fd-btn-primary">
+                        <i class="bi bi-cloud-upload me-2"></i>Upload Photos
+                    </a>
+                    <a href="{% url 'create_album' folder.id %}" class="btn fd-btn-outline-light">
+                        <i class="bi bi-collection me-2"></i>Create Album
+                    </a>
+                </div>
 
-                    <!-- FOLDER ACTIONS -->
+            </div>
+        </header>
 
-                    <div class="folder-actions d-flex flex-wrap gap-2 mt-3 mt-sm-0">
+        <!-- ===================== AI TOOLS ===================== -->
+        <section class="fd-panel mb-4" aria-labelledby="aiToolsTitle">
+            <div class="fd-panel-head">
+                <div>
+                    <h2 class="fd-panel-title" id="aiToolsTitle">
+                        <i class="bi bi-stars me-2"></i>AI Tools
+                    </h2>
+                    <p class="fd-panel-sub">Analyze quality, classify scenes and group people across this folder.</p>
+                </div>
+            </div>
 
-                        <!-- UPLOAD PHOTOS -->
+            <div class="row g-3">
 
-                        <a href="{% url 'upload_folder_photos' folder.id %}" class="btn btn-folder-cta px-4">
-
-                            <i class="bi bi-cloud-upload me-2"></i>
-
-                            Upload Photos
-
-                        </a>
-
-
-                        <!-- CREATE ALBUM -->
-
-                        <a href="{% url 'create_album' folder.id %}" class="btn btn-folder-cta-secondary px-4">
-
-                            <i class="bi bi-images me-2"></i>
-
-                            Create Album
-
-                        </a>
-
-
-                        <!-- AI ANALYSIS -->
-
-                        <form method="post" action="{% url 'analyze_folder_photos' folder.id %}">
-
+                <!-- QUALITY ANALYSIS -->
+                <div class="col-lg-4">
+                    <div class="fd-tool">
+                        <div class="fd-tool-icon"><i class="bi bi-speedometer2"></i></div>
+                        <div class="fd-tool-body">
+                            <h3>Quality Analysis</h3>
+                            <p>Scores sharpness, brightness and resolution for every photo.</p>
+                        </div>
+                        <form method="post" action="{% url 'analyze_folder_photos' folder.id %}" data-ai-form>
                             {% csrf_token %}
-
-                            <button type="submit" class="btn btn-ai-analysis px-4" {% if not photos %}disabled{% endif
-                                %}>
-
-                                <i class="bi bi-stars me-2"></i>
-
-                                Run AI Analysis
-
+                            <button type="submit" class="btn fd-btn-tool" {% if not all_photos_count %}disabled{% endif %}>
+                                <span class="fd-btn-label"><i class="bi bi-play-fill me-1"></i>Run Analysis</span>
                             </button>
-
                         </form>
-
                     </div>
+                </div>
 
+                <!-- CLASSIFICATION -->
+                <div class="col-lg-4">
+                    <div class="fd-tool">
+                        <div class="fd-tool-icon"><i class="bi bi-tags"></i></div>
+                        <div class="fd-tool-body">
+                            <h3>Smart Classification</h3>
+                            <p>Labels category, scene and photo type using Gemini.</p>
+                        </div>
+                        <form method="post" action="{% url 'classify_folder_photos' folder.id %}" data-ai-form
+                            data-confirm="AI will analyze the unclassified photos in this folder using Gemini. Continue?">
+                            {% csrf_token %}
+                            <button type="submit" class="btn fd-btn-tool" {% if not all_photos_count %}disabled{% endif %}>
+                                <span class="fd-btn-label"><i class="bi bi-play-fill me-1"></i>Classify Photos</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- FACE GROUPING -->
+                <div class="col-lg-4">
+                    <div class="fd-tool">
+                        <div class="fd-tool-icon"><i class="bi bi-people"></i></div>
+                        <div class="fd-tool-body">
+                            <h3>Face Grouping</h3>
+                            <p>Detects faces and groups the same person across photos.</p>
+                        </div>
+                        <form method="post" action="{% url 'group_faces' folder.id %}" data-ai-form
+                            data-confirm="AI will analyze all photos in this folder and replace any previous face grouping. Continue?">
+                            {% csrf_token %}
+                            <button type="submit" class="btn fd-btn-tool" {% if not all_photos_count %}disabled{% endif %}>
+                                <span class="fd-btn-label"><i class="bi bi-play-fill me-1"></i>Group Faces</span>
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
             </div>
 
-        </div>
-        <!-- ========================================= -->
-        <!-- AI FACE GROUPING -->
-        <!-- ========================================= -->
-
-        <div class="row mb-4">
-
-            <div class="col-12">
-
-                <div class="face-grouping-panel">
-
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-
-                        <!-- LEFT SIDE -->
-                        <div class="d-flex align-items-center gap-3">
-
-                            <div class="face-grouping-icon">
-                                <i class="bi bi-people-fill"></i>
-                            </div>
-
-                            <div>
-
-                                <h5 class="face-grouping-title mb-1">
-                                    AI Smart Face Grouping
-                                </h5>
-
-                                <p class="face-grouping-description mb-0">
-                                    Detect and group similar faces across
-                                    the photos in this folder.
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- RIGHT SIDE -->
-                        <div>
-
-                            <div class="d-flex flex-wrap gap-2">
-
-                                <!-- GROUP FACES -->
-                                <form method="post" action="{% url 'group_faces' folder.id %}" onsubmit="return confirm(
-              'AI will analyze all photos in this folder and replace any previous face grouping. Continue?'
-          );">
-
-                                    {% csrf_token %}
-
-                                    <button type="submit" class="btn btn-face-grouping" {% if not photos %}disabled{% endif %}>
-
-                                        <i class="bi bi-people-fill me-2"></i>
-                                        Group Faces with AI
-
-                                    </button>
-
-                                </form>
-
-
-                                <!-- CLASSIFY PHOTOS -->
-                                <form method="post" action="{% url 'classify_folder_photos' folder.id %}" onsubmit="return confirm(
-              'AI will analyze all photos in this folder using Gemini. Continue?'
-          );">
-
-                                    {% csrf_token %}
-
-                                    <button type="submit" class="btn btn-ai-classify" {% if not photos %}disabled{%
-                                        endif %}>
-
-                                        <i class="bi bi-stars me-2"></i>
-                                        Classify Photos with AI
-
-                                    </button>
-
-                                </form>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- FACE STATISTICS -->
-
-                    {% if face_count > 0 %}
-
-                    <div class="face-grouping-stats mt-4">
-
-                        <div class="face-stat">
-
-                            <div class="face-stat-icon">
-                                <i class="bi bi-person-bounding-box"></i>
-                            </div>
-
-                            <div>
-
-                                <strong>
-                                    {{ face_count }}
-                                </strong>
-
-                                <span>
-                                    Faces Detected
-                                </span>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="face-stat">
-
-                            <div class="face-stat-icon">
-                                <i class="bi bi-people"></i>
-                            </div>
-
-                            <div>
-
-                                <strong>
-                                    {{ people_group_count }}
-                                </strong>
-
-                                <span>
-                                    Groups Found
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    {% else %}
-
-                    <div class="face-grouping-empty mt-4">
-
-                        <i class="bi bi-info-circle me-2"></i>
-
-                        No face grouping has been performed yet.
-
-                        Click
-                        <strong>Group Faces with AI</strong>
-                        to analyze this folder.
-
-                    </div>
-
-                    {% endif %}
-
+            <!-- STATS -->
+            <div class="fd-stats">
+                <div class="fd-stat">
+                    <span class="fd-stat-value">{{ analyzed_count|default:0 }}<small>/{{ all_photos_count|default:0 }}</small></span>
+                    <span class="fd-stat-label">Photos analyzed</span>
                 </div>
-
+                <div class="fd-stat">
+                    <span class="fd-stat-value">{{ recommended_count|default:0 }}</span>
+                    <span class="fd-stat-label">AI recommended</span>
+                </div>
+                <div class="fd-stat">
+                    <span class="fd-stat-value">{{ face_count|default:0 }}</span>
+                    <span class="fd-stat-label">Faces detected</span>
+                </div>
+                <div class="fd-stat">
+                    <span class="fd-stat-value">{{ people_group_count|default:0 }}</span>
+                    <span class="fd-stat-label">People groups</span>
+                </div>
             </div>
+        </section>
 
-        </div>
-
-
-        <!-- ========================================= -->
-        <!-- DETECTED FACE GROUPS -->
-        <!-- ========================================= -->
-
+        <!-- ===================== FACE GROUPS ===================== -->
         {% if face_groups %}
-
-        <div class="row mb-4">
-
-            <div class="col-12">
-
-                <div class="face-groups-container">
-
-                    <div class="d-flex align-items-center justify-content-between mb-4">
-
-                        <div>
-
-                            <h5 class="filter-title mb-1">
-
-                                <i class="bi bi-people-fill me-2"></i>
-
-                                Detected Face Groups
-
-                            </h5>
-
-                            <small class="filter-description">
-
-                                Similar faces detected and grouped by AI.
-
-                            </small>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="row g-3">
-
-                        {% for group in face_groups %}
-
-                        <div class="col-xl-4 col-lg-4 col-md-6">
-
-                            <div class="face-group-card h-100">
-
-                                <div class="face-group-card-body">
-
-                                    <div class="d-flex align-items-center gap-3">
-
-                                        <div class="face-group-avatar">
-
-                                            {% if group.name == "Unknown" %}
-
-                                            <i class="bi bi-question-lg"></i>
-
-                                            {% else %}
-
-                                            <i class="bi bi-person-fill"></i>
-
-                                            {% endif %}
-
-                                        </div>
-
-
-                                        <div>
-
-                                            <h6 class="face-group-name mb-1">
-
-                                                {{ group.name }}
-
-                                            </h6>
-
-                                            <p class="face-group-count mb-0">
-
-                                                {{ group.faces.count }}
-
-                                                detected face{{ group.faces.count|pluralize }}
-
-                                            </p>
-                                            <a href="{% url 'face_group_photos' folder.id group.id %}"
-                                                class="btn btn-sm btn-dark">
-                                                View Photos
-                                            </a>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        {% endfor %}
-
-                    </div>
-
+        <section class="fd-panel mb-4" aria-labelledby="faceGroupsTitle">
+            <div class="fd-panel-head">
+                <div>
+                    <h2 class="fd-panel-title" id="faceGroupsTitle">
+                        <i class="bi bi-people-fill me-2"></i>People in this folder
+                    </h2>
+                    <p class="fd-panel-sub">Similar faces detected and grouped by AI.</p>
                 </div>
-
             </div>
 
-        </div>
-
-        {% endif %}
-        <!-- ========================================= -->
-        <!-- AI ANALYSIS SUMMARY -->
-        <!-- ========================================= -->
-
-        {% if analyzed_count %}
-
-        <div class="row mb-4">
-
-            <div class="col-12">
-
-                <div class="ai-summary">
-
-                    <div class="d-flex align-items-center gap-3">
-
-                        <div class="ai-summary-icon">
-
-                            <i class="bi bi-stars"></i>
-
+            <div class="row g-3">
+                {% for group in face_groups %}
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <a href="{% url 'face_group_photos' folder.id group.id %}" class="fd-person">
+                        <div class="fd-person-avatar">
+                            {% if group.name == "Unknown" %}<i class="bi bi-question-lg"></i>{% else %}<i class="bi bi-person-fill"></i>{% endif %}
                         </div>
-
-
-                        <div>
-
-                            <h5 class="mb-1">
-
-                                AI Analysis Completed
-
-                            </h5>
-
-
-                            <p class="mb-0">
-
-                                {{ analyzed_count }}
-
-                                of
-
-                                {{ photos|length }}
-
-                                photos analyzed.
-
-                            </p>
-
+                        <div class="fd-person-info">
+                            <strong>{{ group.name }}</strong>
+                            <span>{{ group.faces.count }} detected face{{ group.faces.count|pluralize }}</span>
                         </div>
-
-                    </div>
-
+                        <i class="bi bi-chevron-right fd-person-arrow"></i>
+                    </a>
                 </div>
-
+                {% endfor %}
             </div>
-
-        </div>
-
+        </section>
         {% endif %}
 
-        <!-- ========================================= -->
-        <!-- AI PHOTO FILTERS -->
-        <!-- ========================================= -->
-
-        <div class="row mb-4">
-
-            <div class="col-12">
-
-                <div class="photo-filter-panel">
-
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-
-                        <div>
-
-                            <h5 class="filter-title mb-1">
-
-                                <i class="bi bi-funnel-fill me-2"></i>
-
-                                Photo Filter
-
-                            </h5>
-
-                            <small class="filter-description">
-
-                                Filter photos using AI recommendations.
-
-                            </small>
-
-                        </div>
-
-
-                        <div class="photo-filter-buttons">
-
-                            <!-- ALL -->
-
-                            <a href="{% url 'folder_details' folder.id %}?filter=all" class="photo-filter-btn
-                        {% if current_filter == 'all' %}
-                            active
-                        {% endif %}">
-
-                                <i class="bi bi-grid-3x3-gap-fill me-1"></i>
-
-                                All
-
-                                <span class="filter-count">
-
-                                    {{ all_photos_count }}
-
-                                </span>
-
-                            </a>
-
-
-                            <!-- RECOMMENDED -->
-
-                            <a href="{% url 'folder_details' folder.id %}?filter=recommended" class="photo-filter-btn recommended-filter
-                        {% if current_filter == 'recommended' %}
-                            active
-                        {% endif %}">
-
-                                <i class="bi bi-star-fill me-1"></i>
-
-                                AI Recommended
-
-                                <span class="filter-count">
-
-                                    {{ recommended_count }}
-
-                                </span>
-
-                            </a>
-
-
-                            <!-- REVIEW -->
-
-                            <a href="{% url 'folder_details' folder.id %}?filter=review" class="photo-filter-btn review-filter
-                        {% if current_filter == 'review' %}
-                            active
-                        {% endif %}">
-
-                                <i class="bi bi-eye-fill me-1"></i>
-
-                                Review
-
-                                <span class="filter-count">
-
-                                    {{ review_count }}
-
-                                </span>
-
-                            </a>
-
-
-                            <!-- NEEDS REVIEW -->
-
-                            <a href="{% url 'folder_details' folder.id %}?filter=needs_review" class="photo-filter-btn needs-review-filter
-                        {% if current_filter == 'needs_review' %}
-                            active
-                        {% endif %}">
-
-                                <i class="bi bi-exclamation-circle-fill me-1"></i>
-
-                                Needs Review
-
-                                <span class="filter-count">
-
-                                    {{ needs_review_count }}
-
-                                </span>
-
-                            </a>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
+        <!-- ===================== FILTER BAR ===================== -->
+        <section class="fd-filterbar mb-4" aria-label="Photo filters">
+            <div class="fd-filterbar-label">
+                <i class="bi bi-funnel-fill me-2"></i>Filter
             </div>
 
-        </div>
+            <nav class="fd-filters">
+                <a href="{% url 'folder_details' folder.id %}?filter=all"
+                    class="fd-filter {% if current_filter == 'all' %}active{% endif %}">
+                    <i class="bi bi-grid-3x3-gap-fill"></i>All
+                    <span class="fd-count">{{ all_photos_count }}</span>
+                </a>
+                <a href="{% url 'folder_details' folder.id %}?filter=recommended"
+                    class="fd-filter fd-filter-good {% if current_filter == 'recommended' %}active{% endif %}">
+                    <i class="bi bi-star-fill"></i>AI Recommended
+                    <span class="fd-count">{{ recommended_count }}</span>
+                </a>
+                <a href="{% url 'folder_details' folder.id %}?filter=review"
+                    class="fd-filter fd-filter-warn {% if current_filter == 'review' %}active{% endif %}">
+                    <i class="bi bi-eye-fill"></i>Review
+                    <span class="fd-count">{{ review_count }}</span>
+                </a>
+                <a href="{% url 'folder_details' folder.id %}?filter=needs_review"
+                    class="fd-filter fd-filter-bad {% if current_filter == 'needs_review' %}active{% endif %}">
+                    <i class="bi bi-exclamation-circle-fill"></i>Needs Review
+                    <span class="fd-count">{{ needs_review_count }}</span>
+                </a>
+            </nav>
+        </section>
 
-        <!-- ========================================= -->
-        <!-- PHOTO GRID -->
-        <!-- ========================================= -->
-
+        <!-- ===================== PHOTO GRID ===================== -->
         <div class="row g-4">
 
             {% for photo in photos %}
+            <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6">
+                <article class="fd-card h-100">
 
-            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-6">
+                    <!-- IMAGE -->
+                    <div class="fd-card-media">
+                        <img src="{{ photo.image.url }}" class="fd-card-img" alt="Photo {{ forloop.counter }}"
+                            loading="lazy" data-bs-toggle="modal" data-bs-target="#photoModal{{ photo.id }}">
 
-                <div class="photo-card h-100">
+                        {% if photo.analysis_result %}
+                        <div class="fd-card-badges">
+                            {% if photo.analysis_result.recommendation == "Recommended" %}
+                            <span class="fd-pill fd-pill-good"><i class="bi bi-check-circle-fill"></i>Recommended</span>
+                            {% elif photo.analysis_result.recommendation == "Review" %}
+                            <span class="fd-pill fd-pill-warn"><i class="bi bi-eye-fill"></i>Review</span>
+                            {% else %}
+                            <span class="fd-pill fd-pill-bad"><i class="bi bi-exclamation-circle-fill"></i>Needs Review</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
 
-
-                    <!-- ================================= -->
-                    <!-- PHOTO -->
-                    <!-- ================================= -->
-
-                    <div class="photo-image-wrapper">
-
-                        <img src="{{ photo.image.url }}" class="photo-image" alt="Photo {{ forloop.counter }}"
-                            data-bs-toggle="modal" data-bs-target="#photoModal{{ photo.id }}">
-
-
-                        <!-- PHOTO OVERLAY -->
-
-                        <div class="photo-overlay">
-
+                        <div class="fd-card-overlay">
                             <button type="button" class="btn btn-light btn-sm rounded-pill px-3" data-bs-toggle="modal"
                                 data-bs-target="#photoModal{{ photo.id }}">
-
-                                <i class="bi bi-eye me-1"></i>
-
-                                Preview
-
+                                <i class="bi bi-arrows-fullscreen me-1"></i>Preview
                             </button>
-
                         </div>
-
                     </div>
 
-
-                    <!-- ================================= -->
-                    <!-- AI ANALYSIS -->
-                    <!-- ================================= -->
-
+                    <!-- QUALITY ANALYSIS -->
                     {% if photo.analysis_result %}
+                    <section class="fd-section">
 
-                    <div class="ai-analysis-panel">
-
-
-                        <!-- AI HEADER -->
-
-                        <div class="d-flex justify-content-between align-items-center mb-3 gap-2">
-
-                            <strong>
-
-                                <i class="bi bi-stars me-1"></i>
-
-                                AI Analysis
-
-                            </strong>
-                            <!-- QUALITY SCORE -->
-
-                            <div class="ai-quality-score mt-3">
-
-                                <div class="d-flex justify-content-between align-items-center">
-
-                                    <span>
-                                        <i class="bi bi-speedometer2 me-1"></i>
-                                        Quality Score
-                                    </span>
-
-                                    <strong>
-                                        {{ photo.analysis_result.quality_score }}/100
-                                    </strong>
-
-                                </div>
-
-                                <div class="progress mt-2">
-
-                                    <div class="progress-bar
-                                        {% if photo.analysis_result.quality_score >= 75 %}
-                                            bg-success
-                                        {% elif photo.analysis_result.quality_score >= 50 %}
-                                            bg-warning
-                                        {% else %}
-                                            bg-danger
-                                        {% endif %}" role="progressbar"
-                                        data-progress="{{ photo.analysis_result.quality_score }}">
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- RECOMMENDATION -->
-
-                            <div class="mt-3">
-
-                                {% if photo.analysis_result.recommendation == "Recommended" %}
-
-                                <span class="badge bg-success">
-
-                                    <i class="bi bi-check-circle-fill me-1"></i>
-
-                                    AI Recommended
-
-                                </span>
-
-                                {% elif photo.analysis_result.recommendation == "Review" %}
-
-                                <span class="badge bg-warning text-dark">
-
-                                    <i class="bi bi-eye-fill me-1"></i>
-
-                                    Review Photo
-
-                                </span>
-
-                                {% else %}
-
-                                <span class="badge bg-danger">
-
-                                    <i class="bi bi-exclamation-circle-fill me-1"></i>
-
-                                    Needs Review
-
-                                </span>
-
-                                {% endif %}
-
-                            </div>
-
-                            <!-- BLUR STATUS -->
-
+                        <div class="fd-section-title">
+                            <span><i class="bi bi-speedometer2 me-1"></i>Quality Analysis</span>
                             {% if photo.analysis_result.blur_status == "Blurry" %}
-
-                            <span class="badge bg-warning text-dark">
-
-                                Potentially blurry
-
-                            </span>
-
-
+                            <span class="fd-pill fd-pill-warn fd-pill-sm">Potentially blurry</span>
                             {% elif photo.analysis_result.blur_status == "Moderately sharp" %}
-
-                            <span class="badge bg-info text-dark">
-
-                                Moderately sharp
-
-                            </span>
-
-
+                            <span class="fd-pill fd-pill-info fd-pill-sm">Moderately sharp</span>
                             {% else %}
-
-                            <span class="badge bg-success">
-
-                                Sharp
-
-                            </span>
-
+                            <span class="fd-pill fd-pill-good fd-pill-sm">Sharp</span>
                             {% endif %}
-
                         </div>
 
+                        <!-- SCORE -->
+                        <div class="fd-metric">
+                            <div class="fd-metric-row">
+                                <span>Overall score</span>
+                                <strong>{{ photo.analysis_result.quality_score }}<small>/100</small></strong>
+                            </div>
+                            <div class="progress fd-progress">
+                                <div class="progress-bar {% if photo.analysis_result.quality_score >= 75 %}bg-success{% elif photo.analysis_result.quality_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                                    role="progressbar" data-progress="{{ photo.analysis_result.quality_score }}"
+                                    aria-valuemin="0" aria-valuemax="100"
+                                    aria-valuenow="{{ photo.analysis_result.quality_score }}"></div>
+                            </div>
+                        </div>
 
-                        <!-- ================================= -->
                         <!-- SHARPNESS -->
-                        <!-- ================================= -->
-
-                        <div class="analysis-metric">
-
-                            <div class="d-flex justify-content-between mb-1">
-
-                                <span>
-
-                                    Sharpness
-
-                                </span>
-
-
-                                <strong>
-
-                                    {{ photo.analysis_result.sharpness }}
-
-                                </strong>
-
+                        <div class="fd-metric">
+                            <div class="fd-metric-row">
+                                <span>Sharpness</span>
+                                <strong>{{ photo.analysis_result.sharpness }}</strong>
                             </div>
-
-
-                            <div class="progress">
-
-                                <div class="progress-bar
-                                    {% if photo.analysis_result.blur_status == 'Blurry' %}
-                                        bg-warning
-                                    {% elif photo.analysis_result.blur_status == 'Moderately sharp' %}
-                                        bg-info
-                                    {% else %}
-                                        bg-success
-                                    {% endif %}" role="progressbar"
-                                    data-progress="{% if photo.analysis_result.sharpness >= 150 %}100{% elif photo.analysis_result.sharpness >= 50 %}50{% else %}10{% endif %}">
-
-                                </div>
-
+                            <div class="progress fd-progress">
+                                <div class="progress-bar {% if photo.analysis_result.blur_status == 'Blurry' %}bg-warning{% elif photo.analysis_result.blur_status == 'Moderately sharp' %}bg-info{% else %}bg-success{% endif %}"
+                                    role="progressbar"
+                                    data-progress="{% if photo.analysis_result.sharpness >= 150 %}100{% elif photo.analysis_result.sharpness >= 50 %}50{% else %}10{% endif %}"></div>
                             </div>
-
                         </div>
 
-
-                        <!-- ================================= -->
                         <!-- BRIGHTNESS -->
-                        <!-- ================================= -->
-
-                        <div class="analysis-metric mt-3">
-
-                            <div class="d-flex justify-content-between mb-1">
-
-                                <span>
-
-                                    Brightness
-
-                                </span>
-
-
+                        <div class="fd-metric">
+                            <div class="fd-metric-row">
+                                <span>Brightness</span>
                                 <strong>
-
                                     {{ photo.analysis_result.brightness }}
-
-                                </strong>
-
-                            </div>
-
-
-                            <div class="progress">
-
-                                <div class="progress-bar
-                                    {% if photo.analysis_result.brightness_status == 'Too dark' %}
-                                        bg-danger
-                                    {% elif photo.analysis_result.brightness_status == 'Too bright' %}
-                                        bg-warning
+                                    {% if photo.analysis_result.brightness_status == "Too dark" %}
+                                    <em class="text-danger"><i class="bi bi-moon-fill"></i> Too dark</em>
+                                    {% elif photo.analysis_result.brightness_status == "Too bright" %}
+                                    <em class="text-warning"><i class="bi bi-sun-fill"></i> Too bright</em>
                                     {% else %}
-                                        bg-success
-                                    {% endif %}" role="progressbar"
-                                    data-progress="{% widthratio photo.analysis_result.brightness 255 100 %}">
-
-                                </div>
-
+                                    <em class="text-success"><i class="bi bi-check-circle-fill"></i> Normal</em>
+                                    {% endif %}
+                                </strong>
                             </div>
-
-
-                            <!-- BRIGHTNESS STATUS -->
-
-                            <div class="mt-1 small">
-
-                                {% if photo.analysis_result.brightness_status == "Too dark" %}
-
-                                <span class="text-danger">
-
-                                    <i class="bi bi-moon-fill me-1"></i>
-
-                                    Too dark
-
-                                </span>
-
-
-                                {% elif photo.analysis_result.brightness_status == "Too bright" %}
-
-                                <span class="text-warning">
-
-                                    <i class="bi bi-sun-fill me-1"></i>
-
-                                    Too bright
-
-                                </span>
-
-
-                                {% else %}
-
-                                <span class="text-success">
-
-                                    <i class="bi bi-check-circle-fill me-1"></i>
-
-                                    Normal brightness
-
-                                </span>
-
-                                {% endif %}
-
+                            <div class="progress fd-progress">
+                                <div class="progress-bar {% if photo.analysis_result.brightness_status == 'Too dark' %}bg-danger{% elif photo.analysis_result.brightness_status == 'Too bright' %}bg-warning{% else %}bg-success{% endif %}"
+                                    role="progressbar"
+                                    data-progress="{% widthratio photo.analysis_result.brightness 255 100 %}"></div>
                             </div>
-
                         </div>
 
-
-                        <!-- ================================= -->
-                        <!-- IMAGE DIMENSIONS -->
-                        <!-- ================================= -->
-
-                        <div class="analysis-dimensions mt-3">
-
+                        <div class="fd-dimensions">
                             <i class="bi bi-aspect-ratio me-1"></i>
-
-                            {{ photo.analysis_result.width }}
-
-                            ×
-
-                            {{ photo.analysis_result.height }}
-
-                            px
-
+                            {{ photo.analysis_result.width }} × {{ photo.analysis_result.height }} px
                         </div>
 
-
-                        <!-- ================================= -->
-                        <!-- AI NOTE -->
-                        <!-- ================================= -->
-
-                        <p class="analysis-note mb-0 mt-2">
-
-                            <i class="bi bi-info-circle me-1"></i>
-
-                            Quality indicators are suggestions,
-                            not automatic photo rejection.
-
-                        </p>
-
-                    </div>
-
+                    </section>
                     {% else %}
-
-                    <!-- NO AI ANALYSIS YET -->
-
-                    <div class="ai-analysis-panel ai-not-analyzed">
-
-                        <div class="d-flex align-items-center gap-2">
-
-                            <i class="bi bi-stars"></i>
-
-                            <span>
-
-                                Not analyzed yet
-
-                            </span>
-
+                    <section class="fd-section fd-section-empty">
+                        <i class="bi bi-speedometer2"></i>
+                        <div>
+                            <strong>Quality analysis pending</strong>
+                            <span>Run Quality Analysis to score this photo.</span>
                         </div>
-
-                        <small>
-
-                            Click "Run AI Analysis" to analyze this photo.
-
-                        </small>
-
-                    </div>
-
+                    </section>
                     {% endif %}
 
+                    <!-- AI CLASSIFICATION -->
+                    {% if photo.ai_classification %}
+                    <section class="fd-section fd-section-class">
 
-                    <!-- ================================= -->
-                    <!-- PHOTO FOOTER -->
-                    <!-- ================================= -->
+                        <div class="fd-section-title">
+                            <span><i class="bi bi-tags me-1"></i>Classification</span>
+                            <span class="fd-pill fd-pill-dark fd-pill-sm">{{ photo.ai_classification.category }}</span>
+                        </div>
 
-                    <div class="photo-card-footer">
+                        <dl class="fd-defs">
+                            <div>
+                                <dt>Scene</dt>
+                                <dd>{{ photo.ai_classification.scene|default:"Not available" }}</dd>
+                            </div>
+                            <div>
+                                <dt>Type</dt>
+                                <dd>{{ photo.ai_classification.photo_type|default:"Not available" }}</dd>
+                            </div>
+                        </dl>
 
-                        <a href="{% url 'delete_photo' photo.id %}" class="btn btn-photo-delete btn-sm"
-                            onclick="return confirm('Delete this photo?')">
+                        <p class="fd-description">
+                            {{ photo.ai_classification.description|default:"No description available." }}
+                        </p>
 
-                            <i class="bi bi-trash me-1"></i>
+                        <div class="fd-metric mb-0">
+                            <div class="fd-metric-row">
+                                <span>Confidence</span>
+                                <strong>{{ photo.ai_classification.confidence }}%</strong>
+                            </div>
+                            <div class="progress fd-progress">
+                                <div class="progress-bar bg-success" role="progressbar"
+                                    data-progress="{{ photo.ai_classification.confidence }}"
+                                    aria-valuenow="{{ photo.ai_classification.confidence }}"
+                                    aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
 
-                            Delete
+                    </section>
+                    {% else %}
+                    <section class="fd-section fd-section-empty">
+                        <i class="bi bi-tags"></i>
+                        <div>
+                            <strong>Classification pending</strong>
+                            <span>Run Smart Classification to label this photo.</span>
+                        </div>
+                    </section>
+                    {% endif %}
 
+                    <!-- FOOTER -->
+                    <footer class="fd-card-footer">
+                        <small class="fd-note">
+                            <i class="bi bi-info-circle me-1"></i>AI scores are suggestions, not rejections.
+                        </small>
+                        <a href="{% url 'delete_photo' photo.id %}" class="btn fd-btn-delete btn-sm"
+                            onclick="return confirm('Delete this photo? This cannot be undone.')">
+                            <i class="bi bi-trash me-1"></i>Delete
                         </a>
+                    </footer>
 
-                    </div>
-
-                </div>
-
+                </article>
             </div>
-
-
-            <!-- ========================================= -->
-            <!-- PHOTO PREVIEW MODAL -->
-            <!-- ========================================= -->
-
-            <div class="modal fade" id="photoModal{{ photo.id }}" tabindex="-1"
-                aria-labelledby="photoModalLabel{{ photo.id }}" aria-hidden="true">
-
-                <div class="modal-dialog modal-xl modal-dialog-centered">
-
-                    <div class="modal-content folder-modal">
-
-
-                        <!-- MODAL HEADER -->
-
-                        <div class="modal-header border-0">
-
-                            <h5 class="folder-modal-title" id="photoModalLabel{{ photo.id }}">
-
-                                <i class="bi bi-image me-2"></i>
-
-                                Photo Preview
-
-                            </h5>
-
-
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                            </button>
-
-                        </div>
-
-
-                        <!-- MODAL BODY -->
-
-                        <div class="modal-body text-center p-4">
-
-                            <img src="{{ photo.image.url }}" class="img-fluid rounded-3" alt="Photo preview"
-                                style="max-height: 80vh;">
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-
-            <!-- ========================================= -->
-            <!-- EMPTY STATE -->
-            <!-- ========================================= -->
 
             {% empty %}
 
+            <!-- EMPTY STATE -->
             <div class="col-12">
-
-                <div class="folder-empty-state text-center">
-
-                    <div class="mb-4">
-
-                        {% if current_filter == "recommended" %}
-
-                        <i class="bi bi-star" style="font-size: 3.6rem; color: var(--line);">
-                        </i>
-
-                        {% elif current_filter == "review" %}
-
-                        <i class="bi bi-eye" style="font-size: 3.6rem; color: var(--line);">
-                        </i>
-
-                        {% elif current_filter == "needs_review" %}
-
-                        <i class="bi bi-exclamation-circle" style="font-size: 3.6rem; color: var(--line);">
-                        </i>
-
-                        {% else %}
-
-                        <i class="bi bi-image" style="font-size: 3.6rem; color: var(--line);">
-                        </i>
-
-                        {% endif %}
-
+                <div class="fd-empty">
+                    <div class="fd-empty-icon">
+                        {% if current_filter == "recommended" %}<i class="bi bi-star"></i>
+                        {% elif current_filter == "review" %}<i class="bi bi-eye"></i>
+                        {% elif current_filter == "needs_review" %}<i class="bi bi-exclamation-circle"></i>
+                        {% else %}<i class="bi bi-image"></i>{% endif %}
                     </div>
-
 
                     {% if current_filter == "recommended" %}
-
-                    <h4 class="folder-empty-title">
-                        No AI recommended photos
-                    </h4>
-
-                    <p class="folder-meta mb-4">
-                        No photos currently meet the AI recommendation criteria.
-                    </p>
-
-
+                    <h4>No AI recommended photos</h4>
+                    <p>No photos currently meet the AI recommendation criteria.</p>
                     {% elif current_filter == "review" %}
-
-                    <h4 class="folder-empty-title">
-                        No photos need review
-                    </h4>
-
-                    <p class="folder-meta mb-4">
-                        There are no photos currently marked for review.
-                    </p>
-
-
+                    <h4>No photos to review</h4>
+                    <p>There are no photos currently marked for review.</p>
                     {% elif current_filter == "needs_review" %}
-
-                    <h4 class="folder-empty-title">
-                        No photos need further review
-                    </h4>
-
-                    <p class="folder-meta mb-4">
-                        No photos currently have a low quality recommendation.
-                    </p>
-
-
+                    <h4>Nothing needs further review</h4>
+                    <p>No photos currently have a low quality recommendation.</p>
                     {% else %}
-
-                    <h4 class="folder-empty-title">
-                        No photos uploaded yet
-                    </h4>
-
-                    <p class="folder-meta mb-4">
-                        Upload photos to start building albums.
-                    </p>
-
-                    <a href="{% url 'upload_folder_photos' folder.id %}" class="btn btn-folder-cta px-5">
-
-                        <i class="bi bi-cloud-upload me-2"></i>
-
-                        Upload Photos
-
+                    <h4>No photos uploaded yet</h4>
+                    <p>Upload photos to start building albums.</p>
+                    <a href="{% url 'upload_folder_photos' folder.id %}" class="btn fd-btn-primary px-4">
+                        <i class="bi bi-cloud-upload me-2"></i>Upload Photos
                     </a>
-
                     {% endif %}
-
 
                     {% if current_filter != "all" %}
-
                     <div class="mt-3">
-
-                        <a href="{% url 'folder_details' folder.id %}?filter=all" class="btn btn-folder-cta-secondary">
-
-                            <i class="bi bi-grid-3x3-gap me-1"></i>
-
-                            Show All Photos
-
+                        <a href="{% url 'folder_details' folder.id %}?filter=all" class="btn fd-btn-outline-dark">
+                            <i class="bi bi-grid-3x3-gap me-1"></i>Show all photos
                         </a>
-
                     </div>
-
                     {% endif %}
-
                 </div>
-
             </div>
-
             {% endfor %}
 
         </div>
 
-
-        <!-- ========================================= -->
-        <!-- FOOTER -->
-        <!-- ========================================= -->
-
-        <div class="row mt-5">
-
-            <div class="col-12 text-center folder-meta">
-
-                <i class="bi bi-folder2-open me-1"></i>
-
-                {{ photos|length }} photos in this folder.
-
-            </div>
-
+        <!-- ===================== FOOTER ===================== -->
+        <div class="fd-footer-count">
+            <i class="bi bi-folder2-open me-1"></i>
+            Showing {{ photos|length }} of {{ all_photos_count|default:photos|length }} photos
         </div>
 
     </div>
 </div>
 
+<!-- ===================== PREVIEW MODALS ===================== -->
+{% for photo in photos %}
+<div class="modal fade" id="photoModal{{ photo.id }}" tabindex="-1" aria-labelledby="photoModalLabel{{ photo.id }}"
+    aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content fd-modal">
+            <div class="modal-header border-0">
+                <h5 class="fd-modal-title" id="photoModalLabel{{ photo.id }}">
+                    <i class="bi bi-image me-2"></i>Photo {{ forloop.counter }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-4 pt-0">
+                <img src="{{ photo.image.url }}" class="img-fluid rounded-3" alt="Photo {{ forloop.counter }} preview"
+                    style="max-height: 80vh;">
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 
-<!-- ================================================= -->
-<!-- STYLES -->
-<!-- ================================================= -->
 
 <style>
-    .folder-details-wrapper {
-        background: var(--paper, #F1ECE0);
+    /* =========================================================
+       FOLDER DETAILS — design tokens & base
+    ========================================================= */
+    .fd-wrapper {
+        --fd-ink: var(--ink, #22221F);
+        --fd-ink-soft: var(--ink-soft, #6B655A);
+        --fd-paper: var(--paper, #F1ECE0);
+        --fd-line: var(--line, #D6CCB4);
+        --fd-gold: var(--gold, #C18B2E);
+        --fd-coral: var(--coral, #D9512F);
+        --fd-moss: var(--moss, #56725A);
+
+        background: var(--fd-paper);
         min-height: 80vh;
-
-        background-image: radial-gradient(circle at 1px 1px,
-                rgba(34, 34, 31, .05) 1px,
-                transparent 0);
-
+        background-image: radial-gradient(circle at 1px 1px, rgba(34, 34, 31, .05) 1px, transparent 0);
         background-size: 18px 18px;
+        font-family: 'Inter', sans-serif;
+        color: var(--fd-ink);
     }
 
-
-    /* =========================================
-       FOLDER HEADER
-    ========================================= */
-
-    .bg-folder-cover {
-        background: var(--ink, #22221F);
-        border-radius: 14px;
+    .fd-wrapper h1,
+    .fd-wrapper h2,
+    .fd-wrapper h3,
+    .fd-wrapper h4 {
+        font-family: 'Fraunces', serif;
     }
 
+    /* ---------- Alerts ---------- */
+    .fd-alert {
+        background: #fff;
+        border: 1px solid var(--fd-line);
+        border-left-width: 4px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(34, 34, 31, .06);
+        font-size: .9rem;
+    }
 
-    .folder-eyebrow {
+    .fd-alert-success {
+        border-left-color: var(--fd-moss);
+    }
 
+    .fd-alert-danger {
+        border-left-color: var(--fd-coral);
+    }
+
+    .fd-alert-warning {
+        border-left-color: var(--fd-gold);
+    }
+
+    .fd-alert-info {
+        border-left-color: #3b7ea1;
+    }
+
+    /* ---------- Header ---------- */
+    .fd-header {
+        background: var(--fd-ink);
+        border-radius: 16px;
+        padding: 2rem 2.25rem;
+        box-shadow: 0 18px 40px -18px rgba(34, 34, 31, .5);
+    }
+
+    .fd-eyebrow {
+        display: inline-flex;
+        align-items: center;
         font-family: 'JetBrains Mono', monospace;
-
-        font-size: .72rem;
-
-        letter-spacing: .12em;
-
-        text-transform: uppercase;
-
-        color: var(--gold, #C18B2E);
-
-        display: inline-flex;
-
-        align-items: center;
-
-        margin-bottom: .6rem;
-    }
-
-
-    .folder-heading {
-
-        font-family: 'Fraunces', serif;
-
-        font-weight: 600;
-
-        font-size: clamp(1.9rem, 3vw, 2.5rem);
-
-        color: var(--paper, #F1ECE0);
-
-        margin: 0;
-    }
-
-
-    .folder-meta-light {
-
-        color: #C8C2B2;
-
-        font-size: .95rem;
-
-        font-family: 'Inter', sans-serif;
-    }
-
-
-    .folder-meta-light i {
-
-        color: var(--gold, #C18B2E);
-    }
-
-
-    .folder-actions {
-
-        align-items: center;
-    }
-
-
-    /* =========================================
-       UPLOAD BUTTON
-    ========================================= */
-
-    .btn-folder-cta {
-
-        background: var(--coral, #D9512F);
-
-        color: #fff;
-
-        font-family: 'Inter', sans-serif;
-
-        font-weight: 600;
-
-        border-radius: 999px;
-
-        padding: .7rem 1.8rem;
-
-        border: none;
-
-        transition: background .2s;
-    }
-
-
-    .btn-folder-cta:hover {
-
-        background: #bf4324;
-
-        color: #fff;
-    }
-
-
-    /* =========================================
-       CREATE ALBUM BUTTON
-    ========================================= */
-
-    .btn-folder-cta-secondary {
-
-        background: transparent;
-
-        color: var(--paper, #F1ECE0);
-
-        font-family: 'Inter', sans-serif;
-
-        font-weight: 600;
-
-        border-radius: 999px;
-
-        padding: .7rem 1.8rem;
-
-        border: 1.5px solid var(--paper, #F1ECE0);
-
-        transition: all .2s;
-    }
-
-
-    .btn-folder-cta-secondary:hover {
-
-        background: var(--paper, #F1ECE0);
-
-        color: var(--ink, #22221F);
-    }
-
-
-    /* =========================================
-       AI BUTTON
-    ========================================= */
-
-    .btn-ai-analysis {
-
-        background: var(--gold, #C18B2E);
-
-        color: #22221F;
-
-        font-family: 'Inter', sans-serif;
-
-        font-weight: 600;
-
-        border-radius: 999px;
-
-        padding: .7rem 1.8rem;
-
-        border: none;
-
-        transition: background .2s;
-    }
-
-
-    .btn-ai-analysis:hover {
-
-        background: #d9a443;
-
-        color: #22221F;
-    }
-
-
-    .btn-ai-analysis:disabled {
-
-        opacity: .5;
-
-        cursor: not-allowed;
-    }
-
-
-    /* =========================================
-       AI SUMMARY
-    ========================================= */
-
-    .ai-summary {
-
-        padding: 1rem 1.5rem;
-
-        background: #fff;
-
-        border: 1px solid var(--line, #D6CCB4);
-
-        border-left: 4px solid var(--gold, #C18B2E);
-
-        border-radius: 12px;
-
-        color: var(--ink, #22221F);
-
-        box-shadow: 0 4px 12px rgba(34, 34, 31, .06);
-    }
-
-
-    .ai-summary-icon {
-
-        width: 44px;
-
-        height: 44px;
-
-        border-radius: 50%;
-
-        background: #f8edcf;
-
-        color: #9b6a15;
-
-        display: flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        font-size: 1.3rem;
-
-        flex-shrink: 0;
-    }
-
-
-    /* =========================================
-       PHOTO CARD
-    ========================================= */
-
-    .photo-card {
-
-        background: #fff;
-
-        border: 1px solid var(--line, #D6CCB4);
-
-        border-radius: 0 12px 12px 12px;
-
-        box-shadow: 0 8px 24px rgba(34, 34, 31, .08);
-
-        overflow: hidden;
-
-        transition:
-            transform .25s ease,
-            box-shadow .3s ease;
-    }
-
-
-    .photo-card:hover {
-
-        transform: translateY(-4px);
-
-        box-shadow: 0 16px 40px rgba(34, 34, 31, .12);
-    }
-
-
-    /* =========================================
-       PHOTO
-    ========================================= */
-
-    .photo-image-wrapper {
-
-        position: relative;
-
-        overflow: hidden;
-
-        background: var(--paper-deep, #E7DFCC);
-    }
-
-
-    .photo-image {
-
-        width: 100%;
-
-        height: 220px;
-
-        object-fit: cover;
-
-        cursor: pointer;
-
-        transition: transform .3s ease;
-
-        display: block;
-    }
-
-
-    .photo-card:hover .photo-image {
-
-        transform: scale(1.02);
-    }
-
-
-    /* =========================================
-       PHOTO OVERLAY
-    ========================================= */
-
-    .photo-overlay {
-
-        position: absolute;
-
-        inset: 0;
-
-        background: rgba(34, 34, 31, .4);
-
-        display: flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        opacity: 0;
-
-        transition: opacity .25s ease;
-    }
-
-
-    .photo-card:hover .photo-overlay {
-
-        opacity: 1;
-    }
-
-
-    .photo-overlay .btn {
-
-        background: rgba(255, 255, 255, .92);
-
-        color: var(--ink, #22221F);
-
-        font-weight: 600;
-
-        border: none;
-
-        backdrop-filter: blur(4px);
-    }
-
-
-    .photo-overlay .btn:hover {
-
-        background: #fff;
-    }
-
-
-    /* =========================================
-       AI ANALYSIS PANEL
-    ========================================= */
-
-    .ai-analysis-panel {
-
-        padding: 1rem;
-
-        background: #fffdf8;
-
-        border-top: 1px solid var(--line, #D6CCB4);
-
-        color: var(--ink, #22221F);
-
-        font-size: .85rem;
-    }
-
-
-    .ai-not-analyzed {
-
-        color: var(--ink-soft, #6B655A);
-
-        background: #faf7ef;
-    }
-
-
-    .ai-not-analyzed i {
-
-        color: var(--gold, #C18B2E);
-
-        font-size: 1rem;
-    }
-
-
-    .ai-not-analyzed small {
-
-        display: block;
-
-        margin-top: .35rem;
-
-        font-size: .72rem;
-
-        color: var(--ink-soft, #6B655A);
-    }
-
-
-    /* =========================================
-       ANALYSIS METRICS
-    ========================================= */
-
-    .analysis-metric {
-
-        color: var(--ink-soft, #6B655A);
-    }
-
-
-    .analysis-metric strong {
-
-        color: var(--ink, #22221F);
-    }
-
-
-    .analysis-metric .progress {
-
-        height: 7px;
-
-        background: #e9e3d6;
-
-        border-radius: 20px;
-
-        overflow: hidden;
-    }
-
-
-    .analysis-metric .progress-bar {
-
-        border-radius: 20px;
-    }
-
-
-    .analysis-dimensions {
-
-        color: var(--ink-soft, #6B655A);
-
-        font-size: .8rem;
-    }
-
-
-    .analysis-note {
-
-        font-size: .72rem;
-
-        line-height: 1.4;
-
-        color: var(--ink-soft, #6B655A);
-    }
-
-
-    /* =========================================
-       PHOTO FOOTER
-    ========================================= */
-
-    .photo-card-footer {
-
-        padding: .8rem 1rem;
-
-        background: #fff;
-
-        border-top: 1px solid var(--line, #D6CCB4);
-
-        text-align: center;
-    }
-
-
-    /* =========================================
-       DELETE BUTTON
-    ========================================= */
-
-    .btn-photo-delete {
-
-        background: transparent;
-
-        color: var(--coral, #D9512F);
-
-        border: 1px solid var(--coral, #D9512F);
-
-        border-radius: 999px;
-
-        font-weight: 600;
-
-        font-size: .8rem;
-
-        padding: .3rem 1.2rem;
-
-        transition: all .2s;
-    }
-
-
-    .btn-photo-delete:hover {
-
-        background: var(--coral, #D9512F);
-
-        color: #fff;
-    }
-
-
-    /* =========================================
-       ALERTS
-    ========================================= */
-
-    .folder-alert {
-
-        border: 1px solid var(--line, #D6CCB4);
-
-        border-radius: 12px;
-
-        background: #fff;
-
-        color: var(--ink, #22221F);
-
-        font-family: 'Inter', sans-serif;
-
-        box-shadow: 0 4px 12px rgba(34, 34, 31, .06);
-    }
-
-
-    .folder-alert.alert-success {
-
-        border-left: 4px solid var(--moss, #56725A);
-    }
-
-
-    .folder-alert.alert-danger {
-
-        border-left: 4px solid var(--coral, #D9512F);
-    }
-
-
-    /* =========================================
-       EMPTY STATE
-    ========================================= */
-
-    .folder-empty-state {
-
-        background: #fff;
-
-        border: 1px solid var(--line, #D6CCB4);
-
-        border-radius: 14px;
-
-        padding: 3.5rem 2rem;
-
-        box-shadow: 0 18px 38px -18px rgba(34, 34, 31, .25);
-    }
-
-
-    .folder-empty-title {
-
-        font-family: 'Fraunces', serif;
-
-        font-weight: 600;
-
-        color: var(--ink, #22221F);
-    }
-
-
-    .folder-meta {
-
-        color: var(--ink-soft, #6B655A);
-
-        font-size: .85rem;
-
-        font-family: 'Inter', sans-serif;
-    }
-
-
-    /* =========================================
-       MODAL
-    ========================================= */
-
-    .folder-modal {
-
-        border: 1px solid var(--line, #D6CCB4);
-
-        border-radius: 14px;
-
-        background: #fff;
-    }
-
-
-    .folder-modal-title {
-
-        font-family: 'Fraunces', serif;
-
-        font-weight: 600;
-
-        color: var(--ink, #22221F);
-    }
-
-    .ai-quality-score {
-        color: var(--ink-soft, #6B655A);
-    }
-
-    .ai-quality-score strong {
-        color: var(--ink, #22221F);
-    }
-
-    .ai-quality-score .progress {
-        height: 8px;
-        background: #e9e3d6;
-        border-radius: 20px;
-        overflow: hidden;
-    }
-
-    .ai-quality-score .progress-bar {
-        border-radius: 20px;
-    }
-
-    /* =========================================
-   PHOTO FILTER PANEL
-========================================= */
-
-    .photo-filter-panel {
-
-        background: #fff;
-
-        border: 1px solid var(--line, #D6CCB4);
-
-        border-radius: 14px;
-
-        padding: 1.2rem 1.5rem;
-
-        box-shadow: 0 6px 18px rgba(34, 34, 31, .06);
-    }
-
-
-    .filter-title {
-
-        font-family: 'Fraunces', serif;
-
-        font-weight: 600;
-
-        color: var(--ink, #22221F);
-    }
-
-
-    .filter-title i {
-
-        color: var(--gold, #C18B2E);
-    }
-
-
-    .filter-description {
-
-        color: var(--ink-soft, #6B655A);
-
-        font-size: .78rem;
-    }
-
-
-    /* =========================================
-   FILTER BUTTONS
-========================================= */
-
-    .photo-filter-buttons {
-
-        display: flex;
-
-        flex-wrap: wrap;
-
-        gap: .5rem;
-    }
-
-
-    .photo-filter-btn {
-
-        display: inline-flex;
-
-        align-items: center;
-
-        gap: .15rem;
-
-        padding: .55rem 1rem;
-
-        border-radius: 999px;
-
-        border: 1px solid var(--line, #D6CCB4);
-
-        background: #fff;
-
-        color: var(--ink, #22221F);
-
-        text-decoration: none;
-
-        font-size: .82rem;
-
-        font-weight: 600;
-
-        transition: all .2s ease;
-    }
-
-
-    .photo-filter-btn:hover {
-
-        background: #f7f3e9;
-
-        color: var(--ink, #22221F);
-
-        transform: translateY(-1px);
-    }
-
-
-    /* ACTIVE */
-
-    .photo-filter-btn.active {
-
-        background: var(--ink, #22221F);
-
-        color: #fff;
-
-        border-color: var(--ink, #22221F);
-    }
-
-
-    /* COUNT */
-
-    .filter-count {
-
-        min-width: 22px;
-
-        height: 22px;
-
-        padding: 0 .35rem;
-
-        display: inline-flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        border-radius: 50%;
-
-        background: #eee8da;
-
-        color: var(--ink, #22221F);
-
         font-size: .7rem;
-
-        margin-left: .2rem;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: var(--fd-gold);
+        margin-bottom: .5rem;
     }
 
-
-    .photo-filter-btn.active .filter-count {
-
-        background: rgba(255, 255, 255, .2);
-
-        color: #fff;
+    .fd-title {
+        font-weight: 600;
+        font-size: clamp(1.7rem, 3vw, 2.3rem);
+        color: var(--fd-paper);
+        margin: 0 0 .5rem;
+        overflow-wrap: anywhere;
     }
 
-
-    /* RECOMMENDED */
-
-    .recommended-filter i {
-
-        color: #C18B2E;
-    }
-
-
-    /* REVIEW */
-
-    .review-filter i {
-
-        color: #D39B18;
-    }
-
-
-    /* NEEDS REVIEW */
-
-    .needs-review-filter i {
-
-        color: #D9512F;
-    }
-
-
-    .photo-filter-btn.active i {
-
-        color: inherit;
-    }
-
-    /* =========================================
-   AI FACE GROUPING
-========================================= */
-
-    .face-grouping-panel {
-
-        background: #fff;
-
-        border: 1px solid var(--line, #D6CCB4);
-
-        border-left: 4px solid var(--gold, #C18B2E);
-
-        border-radius: 14px;
-
-        padding: 1.5rem;
-
-        box-shadow: 0 8px 24px rgba(34, 34, 31, .07);
-    }
-
-
-    .face-grouping-icon {
-
-        width: 48px;
-
-        height: 48px;
-
-        border-radius: 12px;
-
-        background: #f8edcf;
-
-        color: #9b6a15;
-
+    .fd-meta {
         display: flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        font-size: 1.35rem;
-
-        flex-shrink: 0;
+        flex-wrap: wrap;
+        gap: .5rem 1.5rem;
+        color: #C8C2B2;
+        font-size: .9rem;
     }
 
+    .fd-meta i {
+        color: var(--fd-gold);
+    }
 
-    .face-grouping-title {
+    .fd-meta .fd-heart {
+        color: var(--fd-coral);
+    }
 
-        font-family: 'Fraunces', serif;
+    .fd-header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .6rem;
+    }
 
+    /* ---------- Buttons ---------- */
+    .fd-btn-primary {
+        background: var(--fd-coral);
+        color: #fff;
         font-weight: 600;
-
-        color: var(--ink, #22221F);
-    }
-
-
-    .face-grouping-description {
-
-        color: var(--ink-soft, #6B655A);
-
-        font-size: .82rem;
-    }
-
-
-    /* =========================================
-   GROUP BUTTON
-========================================= */
-
-    .btn-face-grouping {
-
-        background: var(--gold, #C18B2E);
-
-        color: #22221F;
-
         border: none;
-
         border-radius: 999px;
-
-        padding: .7rem 1.5rem;
-
-        font-family: 'Inter', sans-serif;
-
-        font-weight: 600;
-
-        transition: all .2s ease;
+        padding: .65rem 1.5rem;
+        transition: background .2s, transform .2s;
     }
 
-
-    .btn-face-grouping:hover {
-
-        background: #d9a443;
-
-        color: #22221F;
-
+    .fd-btn-primary:hover {
+        background: #bf4324;
+        color: #fff;
         transform: translateY(-1px);
     }
 
+    .fd-btn-outline-light {
+        background: transparent;
+        color: var(--fd-paper);
+        font-weight: 600;
+        border: 1.5px solid rgba(241, 236, 224, .7);
+        border-radius: 999px;
+        padding: .65rem 1.5rem;
+        transition: all .2s;
+    }
 
-    .btn-face-grouping:disabled {
+    .fd-btn-outline-light:hover {
+        background: var(--fd-paper);
+        color: var(--fd-ink);
+    }
 
-        opacity: .5;
+    .fd-btn-outline-dark {
+        background: transparent;
+        color: var(--fd-ink);
+        font-weight: 600;
+        border: 1.5px solid var(--fd-ink);
+        border-radius: 999px;
+        padding: .55rem 1.3rem;
+    }
 
+    .fd-btn-outline-dark:hover {
+        background: var(--fd-ink);
+        color: #fff;
+    }
+
+    .fd-btn-tool {
+        background: var(--fd-ink);
+        color: #fff;
+        font-size: .82rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 999px;
+        padding: .5rem 1.15rem;
+        white-space: nowrap;
+        transition: background .2s;
+    }
+
+    .fd-btn-tool:hover {
+        background: #3a3a35;
+        color: #fff;
+    }
+
+    .fd-btn-tool:disabled {
+        opacity: .45;
         cursor: not-allowed;
-
-        transform: none;
     }
 
-
-    /* =========================================
-   FACE STATISTICS
-========================================= */
-
-    .face-grouping-stats {
-
-        display: flex;
-
-        flex-wrap: wrap;
-
-        gap: .8rem;
+    .fd-btn-tool.is-loading {
+        pointer-events: none;
+        opacity: .85;
     }
 
-
-    .face-stat {
-
-        display: flex;
-
-        align-items: center;
-
-        gap: .7rem;
-
-        padding: .7rem 1rem;
-
-        background: #faf7ef;
-
-        border: 1px solid var(--line, #D6CCB4);
-
-        border-radius: 10px;
+    .fd-btn-delete {
+        background: transparent;
+        color: var(--fd-coral);
+        border: 1px solid var(--fd-coral);
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: .75rem;
+        padding: .25rem .9rem;
+        transition: all .2s;
     }
 
-
-    .face-stat-icon {
-
-        width: 36px;
-
-        height: 36px;
-
-        border-radius: 9px;
-
-        background: #eee8da;
-
-        color: var(--ink, #22221F);
-
-        display: flex;
-
-        align-items: center;
-
-        justify-content: center;
+    .fd-btn-delete:hover {
+        background: var(--fd-coral);
+        color: #fff;
     }
 
-
-    .face-stat strong {
-
-        display: block;
-
-        color: var(--ink, #22221F);
-
-        font-size: 1rem;
-    }
-
-
-    .face-stat span {
-
-        display: block;
-
-        color: var(--ink-soft, #6B655A);
-
-        font-size: .72rem;
-    }
-
-
-    /* =========================================
-   EMPTY STATE
-========================================= */
-
-    .face-grouping-empty {
-
-        padding: .9rem 1rem;
-
-        background: #faf7ef;
-
-        border: 1px dashed var(--line, #D6CCB4);
-
-        border-radius: 10px;
-
-        color: var(--ink-soft, #6B655A);
-
-        font-size: .8rem;
-    }
-
-
-    /* =========================================
-   FACE GROUPS CONTAINER
-========================================= */
-
-    .face-groups-container {
-
+    /* ---------- Panels ---------- */
+    .fd-panel {
         background: #fff;
-
-        border: 1px solid var(--line, #D6CCB4);
-
+        border: 1px solid var(--fd-line);
         border-radius: 14px;
-
         padding: 1.5rem;
-
         box-shadow: 0 6px 18px rgba(34, 34, 31, .06);
     }
 
+    .fd-panel-head {
+        margin-bottom: 1.1rem;
+    }
 
-    /* =========================================
-   FACE GROUP CARD
-========================================= */
+    .fd-panel-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin: 0 0 .2rem;
+    }
 
-    .face-group-card {
+    .fd-panel-title i {
+        color: var(--fd-gold);
+    }
 
-        background: #fffdf8;
+    .fd-panel-sub {
+        margin: 0;
+        font-size: .82rem;
+        color: var(--fd-ink-soft);
+    }
 
-        border: 1px solid var(--line, #D6CCB4);
-
+    /* ---------- AI tools ---------- */
+    .fd-tool {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: .9rem;
+        background: #faf7ef;
+        border: 1px solid var(--fd-line);
         border-radius: 12px;
-
-        transition:
-            transform .2s ease,
-            box-shadow .2s ease;
-    }
-
-
-    .face-group-card:hover {
-
-        transform: translateY(-3px);
-
-        box-shadow: 0 10px 25px rgba(34, 34, 31, .09);
-    }
-
-
-    .face-group-card-body {
-
         padding: 1.1rem;
     }
 
-
-    .face-group-avatar {
-
-        width: 46px;
-
-        height: 46px;
-
-        border-radius: 50%;
-
+    .fd-tool-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
         background: #f8edcf;
-
         color: #9b6a15;
-
         display: flex;
-
         align-items: center;
-
         justify-content: center;
-
         font-size: 1.15rem;
+    }
 
+    .fd-tool-body {
+        flex: 1;
+    }
+
+    .fd-tool-body h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0 0 .25rem;
+    }
+
+    .fd-tool-body p {
+        margin: 0;
+        font-size: .8rem;
+        color: var(--fd-ink-soft);
+        line-height: 1.45;
+    }
+
+    /* ---------- Stats ---------- */
+    .fd-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: .8rem;
+        margin-top: 1.25rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--fd-line);
+    }
+
+    .fd-stat {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .fd-stat-value {
+        font-family: 'Fraunces', serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        line-height: 1.1;
+    }
+
+    .fd-stat-value small {
+        font-size: .85rem;
+        color: var(--fd-ink-soft);
+        font-weight: 500;
+    }
+
+    .fd-stat-label {
+        font-size: .72rem;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: var(--fd-ink-soft);
+        margin-top: .2rem;
+    }
+
+    /* ---------- People ---------- */
+    .fd-person {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        padding: .85rem 1rem;
+        background: #fffdf8;
+        border: 1px solid var(--fd-line);
+        border-radius: 12px;
+        color: var(--fd-ink);
+        text-decoration: none;
+        transition: transform .2s, box-shadow .2s, border-color .2s;
+    }
+
+    .fd-person:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 22px rgba(34, 34, 31, .09);
+        border-color: var(--fd-gold);
+        color: var(--fd-ink);
+    }
+
+    .fd-person-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #f8edcf;
+        color: #9b6a15;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
         flex-shrink: 0;
     }
 
-
-    .face-group-name {
-
-        color: var(--ink, #22221F);
-
-        font-family: 'Inter', sans-serif;
-
-        font-weight: 700;
+    .fd-person-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
     }
 
+    .fd-person-info strong {
+        font-size: .92rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 
-    .face-group-count {
-
-        color: var(--ink-soft, #6B655A);
-
+    .fd-person-info span {
         font-size: .75rem;
+        color: var(--fd-ink-soft);
     }
 
-
-    /* =========================================
-   FACE GROUPING MOBILE
-========================================= */
-
-    @media (max-width: 576px) {
-
-        .face-grouping-panel {
-
-            padding: 1.1rem;
-        }
-
-        .face-grouping-panel .btn-face-grouping {
-
-            width: 100%;
-
-            margin-top: .5rem;
-        }
-
-        .face-grouping-panel>div {
-
-            width: 100%;
-        }
-
-        .face-grouping-stats {
-
-            width: 100%;
-        }
-
-        .face-stat {
-
-            flex: 1;
-
-            min-width: 140px;
-        }
-
+    .fd-person-arrow {
+        color: var(--fd-ink-soft);
+        font-size: .8rem;
     }
 
-    /* MOBILE */
+    /* ---------- Filter bar ---------- */
+    .fd-filterbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .75rem 1.25rem;
+        background: #fff;
+        border: 1px solid var(--fd-line);
+        border-radius: 14px;
+        padding: .85rem 1.25rem;
+        box-shadow: 0 6px 18px rgba(34, 34, 31, .05);
+    }
 
+    .fd-filterbar-label {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+    }
+
+    .fd-filterbar-label i {
+        color: var(--fd-gold);
+    }
+
+    .fd-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    .fd-filter {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .45rem .9rem;
+        border: 1px solid var(--fd-line);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--fd-ink);
+        font-size: .8rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all .2s;
+    }
+
+    .fd-filter:hover {
+        background: #f7f3e9;
+        color: var(--fd-ink);
+    }
+
+    .fd-filter-good i {
+        color: var(--fd-gold);
+    }
+
+    .fd-filter-warn i {
+        color: #D39B18;
+    }
+
+    .fd-filter-bad i {
+        color: var(--fd-coral);
+    }
+
+    .fd-filter.active {
+        background: var(--fd-ink);
+        border-color: var(--fd-ink);
+        color: #fff;
+    }
+
+    .fd-filter.active i {
+        color: inherit;
+    }
+
+    .fd-count {
+        min-width: 22px;
+        height: 22px;
+        padding: 0 .4rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background: #eee8da;
+        color: var(--fd-ink);
+        font-size: .7rem;
+    }
+
+    .fd-filter.active .fd-count {
+        background: rgba(255, 255, 255, .2);
+        color: #fff;
+    }
+
+    /* ---------- Photo card ---------- */
+    .fd-card {
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border: 1px solid var(--fd-line);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(34, 34, 31, .08);
+        transition: transform .25s ease, box-shadow .3s ease;
+    }
+
+    .fd-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px rgba(34, 34, 31, .12);
+    }
+
+    .fd-card-media {
+        position: relative;
+        overflow: hidden;
+        background: var(--paper-deep, #E7DFCC);
+    }
+
+    .fd-card-img {
+        display: block;
+        width: 100%;
+        height: 230px;
+        object-fit: cover;
+        cursor: pointer;
+        transition: transform .3s ease;
+    }
+
+    .fd-card:hover .fd-card-img {
+        transform: scale(1.03);
+    }
+
+    .fd-card-badges {
+        position: absolute;
+        top: .7rem;
+        left: .7rem;
+        display: flex;
+        gap: .4rem;
+        z-index: 2;
+    }
+
+    .fd-card-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(34, 34, 31, .4);
+        opacity: 0;
+        transition: opacity .25s ease;
+        pointer-events: none;
+    }
+
+    .fd-card-overlay .btn {
+        pointer-events: auto;
+        font-weight: 600;
+    }
+
+    .fd-card:hover .fd-card-overlay {
+        opacity: 1;
+    }
+
+    /* ---------- Pills ---------- */
+    .fd-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .3rem .7rem;
+        border-radius: 999px;
+        font-size: .72rem;
+        font-weight: 600;
+        line-height: 1.2;
+        background: #fff;
+        color: var(--fd-ink);
+    }
+
+    .fd-pill-sm {
+        padding: .2rem .55rem;
+        font-size: .68rem;
+    }
+
+    .fd-pill-good {
+        background: #e3efe5;
+        color: #2f5a3a;
+    }
+
+    .fd-pill-warn {
+        background: #fbefc9;
+        color: #7a5a0a;
+    }
+
+    .fd-pill-bad {
+        background: #f9dfd7;
+        color: #a2361b;
+    }
+
+    .fd-pill-info {
+        background: #dcecf4;
+        color: #1f5775;
+    }
+
+    .fd-pill-dark {
+        background: var(--fd-ink);
+        color: #fff;
+    }
+
+    .fd-card-media .fd-pill {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+    }
+
+    /* ---------- Card sections ---------- */
+    .fd-section {
+        padding: 1rem 1.1rem;
+        border-top: 1px solid var(--fd-line);
+        font-size: .85rem;
+    }
+
+    .fd-section-class {
+        background: #fffaf0;
+    }
+
+    .fd-section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .5rem;
+        margin-bottom: .9rem;
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: var(--fd-ink-soft);
+    }
+
+    .fd-section-title i {
+        color: var(--fd-gold);
+    }
+
+    .fd-section-empty {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        background: #faf7ef;
+        color: var(--fd-ink-soft);
+    }
+
+    .fd-section-empty>i {
+        font-size: 1.1rem;
+        color: var(--fd-gold);
+    }
+
+    .fd-section-empty strong {
+        display: block;
+        font-size: .8rem;
+        color: var(--fd-ink);
+    }
+
+    .fd-section-empty span {
+        font-size: .72rem;
+    }
+
+    /* ---------- Metrics ---------- */
+    .fd-metric {
+        margin-bottom: .85rem;
+        color: var(--fd-ink-soft);
+    }
+
+    .fd-metric-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: .3rem;
+        font-size: .8rem;
+    }
+
+    .fd-metric-row strong {
+        color: var(--fd-ink);
+        font-size: .85rem;
+    }
+
+    .fd-metric-row strong small {
+        color: var(--fd-ink-soft);
+        font-weight: 500;
+    }
+
+    .fd-metric-row em {
+        font-style: normal;
+        font-size: .72rem;
+        font-weight: 600;
+        margin-left: .4rem;
+    }
+
+    .fd-progress {
+        height: 6px;
+        background: #e9e3d6;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .fd-progress .progress-bar {
+        border-radius: 20px;
+        transition: width .6s ease;
+    }
+
+    .fd-dimensions {
+        font-size: .75rem;
+        color: var(--fd-ink-soft);
+    }
+
+    /* ---------- Classification details ---------- */
+    .fd-defs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .75rem;
+        margin: 0 0 .75rem;
+    }
+
+    .fd-defs dt {
+        font-size: .68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: var(--fd-ink-soft);
+        margin-bottom: .15rem;
+    }
+
+    .fd-defs dd {
+        margin: 0;
+        font-size: .83rem;
+        overflow-wrap: anywhere;
+    }
+
+    .fd-description {
+        margin: 0 0 .9rem;
+        font-size: .82rem;
+        line-height: 1.5;
+        color: var(--fd-ink);
+        overflow-wrap: anywhere;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;  
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* ---------- Card footer ---------- */
+    .fd-card-footer {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        padding: .75rem 1.1rem;
+        border-top: 1px solid var(--fd-line);
+        background: #fff;
+    }
+
+    .fd-note {
+        font-size: .68rem;
+        color: var(--fd-ink-soft);
+        line-height: 1.3;
+    }
+
+    /* ---------- Empty ---------- */
+    .fd-empty {
+        background: #fff;
+        border: 1px solid var(--fd-line);
+        border-radius: 14px;
+        padding: 3.5rem 2rem;
+        text-align: center;
+        box-shadow: 0 18px 38px -18px rgba(34, 34, 31, .25);
+    }
+
+    .fd-empty-icon {
+        font-size: 3.4rem;
+        color: var(--fd-line);
+        margin-bottom: 1rem;
+    }
+
+    .fd-empty h4 {
+        font-weight: 600;
+        margin-bottom: .4rem;
+    }
+
+    .fd-empty p {
+        color: var(--fd-ink-soft);
+        font-size: .88rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .fd-footer-count {
+        margin-top: 2.5rem;
+        text-align: center;
+        font-size: .82rem;
+        color: var(--fd-ink-soft);
+    }
+
+    /* ---------- Modal ---------- */
+    .fd-modal {
+        border: 1px solid var(--fd-line);
+        border-radius: 14px;
+        background: #fff;
+    }
+
+    .fd-modal-title {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+    }
+
+    /* ---------- Responsive ---------- */
     @media (max-width: 768px) {
-
-        .photo-filter-panel {
-
-            padding: 1rem;
+        .fd-stats {
+            grid-template-columns: repeat(2, 1fr);
         }
 
-        .photo-filter-buttons {
-
+        .fd-filterbar-label {
             width: 100%;
         }
 
-        .photo-filter-btn {
-
+        .fd-filter {
             flex: 1;
-
             justify-content: center;
-
             min-width: 140px;
         }
-
     }
 
-    /* =========================================
-       MOBILE
-    ========================================= */
-
     @media (max-width: 576px) {
-
-        .folder-header {
-
+        .fd-header {
+            padding: 1.5rem 1.25rem;
             text-align: center;
         }
 
-
-        .folder-meta-light {
-
+        .fd-meta {
             justify-content: center;
         }
 
-
-        .folder-actions {
-
-            width: 100%;
-
-            justify-content: center;
-        }
-
-
-        .folder-actions>a,
-        .folder-actions>form {
-
+        .fd-header-actions {
             width: 100%;
         }
 
+        .fd-header-actions .btn {
+            flex: 1;
+        }
 
-        .folder-actions form button {
+        .fd-card-img {
+            height: 190px;
+        }
 
+        .fd-tool form,
+        .fd-tool .btn {
             width: 100%;
         }
+    }
 
+    @media (prefers-reduced-motion: reduce) {
 
-        .photo-image {
-
-            height: 180px;
+        .fd-card,
+        .fd-card-img,
+        .fd-progress .progress-bar,
+        .fd-person {
+            transition: none;
         }
-
     }
 </style>
 
 
-<!-- ================================================= -->
-<!-- JAVASCRIPT -->
-<!-- ================================================= -->
-
 <script>
-
-    document.querySelectorAll(
-        '[data-progress]'
-    ).forEach(progressBar => {
-
-        const progress = Number(
-            progressBar.dataset.progress
-        );
-
-        if (Number.isFinite(progress)) {
-
-            progressBar.style.width =
-                `${Math.min(
-                    100,
-                    Math.max(
-                        0,
-                        progress
-                    )
-                )}%`;
-
+    // Progress bars
+    document.querySelectorAll('[data-progress]').forEach(function (bar) {
+        var value = Number(bar.dataset.progress);
+        if (Number.isFinite(value)) {
+            bar.style.width = Math.min(100, Math.max(0, value)) + '%';
         }
-
     });
-    function getCookie(name) {
 
-        let cookieValue = null;
-
-        if (document.cookie && document.cookie !== "") {
-
-            const cookies = document.cookie.split(";");
-
-            for (let cookie of cookies) {
-
-                cookie = cookie.trim();
-
-                if (
-                    cookie.substring(
-                        0,
-                        name.length + 1
-                    ) === name + "="
-                ) {
-
-                    cookieValue = decodeURIComponent(
-                        cookie.substring(
-                            name.length + 1
-                        )
-                    );
-
-                    break;
-                }
+    // AI forms: optional confirm + loading state to prevent double submits
+    document.querySelectorAll('form[data-ai-form]').forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            var message = form.dataset.confirm;
+            if (message && !window.confirm(message)) {
+                event.preventDefault();
+                return;
             }
-        }
 
-        return cookieValue;
-    }
-
+            var button = form.querySelector('button[type="submit"]');
+            if (button) {
+                button.classList.add('is-loading');
+                button.setAttribute('aria-busy', 'true');
+                var label = button.querySelector('.fd-btn-label');
+                if (label) {
+                    label.innerHTML =
+                        '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing…';
+                }
+                // Disable after the submit event has fired so the POST still goes through
+                setTimeout(function () { button.disabled = true; }, 0);
+            }
+        });
+    });
 </script>
-
 
 {% endblock %}

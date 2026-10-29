@@ -464,16 +464,14 @@ def group_folder_faces(folder_id, user_id):
         "groups_created": len(group_objects),
     }
 
-from .gemini_classifier import classify_image_with_gemini
+import time
+
+from pizxifyapp.models import PhotoFolder, FolderPhoto
 from .models import PhotoClassification
+from .gemini_classifier import classify_image_with_gemini
+
+
 def classify_folder_photos(folder_id, user_id):
-    """
-    Classify all photos in a folder using Gemini Vision
-    and save the results into PhotoClassification.
-
-    Temporary Gemini errors are retried automatically.
-    """
-
     folder = PhotoFolder.objects.filter(
         id=folder_id,
         created_by_id=user_id
@@ -484,10 +482,17 @@ def classify_folder_photos(folder_id, user_id):
             "Folder not found or you do not have permission."
         )
 
+    # Only photos that are not classified yet
+    classified_photo_ids = PhotoClassification.objects.filter(
+        photo__folder=folder
+    ).values_list("photo_id", flat=True)
+
     photos = list(
-        FolderPhoto.objects
-        .filter(folder=folder)
-        .order_by("id")
+        FolderPhoto.objects.filter(
+            folder=folder
+        ).exclude(
+            id__in=classified_photo_ids
+        ).order_by("id")
     )
 
     if not photos:
@@ -495,19 +500,18 @@ def classify_folder_photos(folder_id, user_id):
             "photos_processed": 0,
             "classified_count": 0,
             "failed_count": 0,
+            "message": "All photos are already classified."
         }
 
     classified_count = 0
     failed_count = 0
+    stopped_by_quota = False
 
     for photo in photos:
-
         success = False
 
         for attempt in range(3):
-
             try:
-
                 result = classify_image_with_gemini(
                     photo.image.path
                 )
@@ -525,74 +529,77 @@ def classify_folder_photos(folder_id, user_id):
 
                 classified_count += 1
                 success = True
-
                 break
 
             except Exception as e:
-
                 error_message = str(e)
-
                 print(
-                    f"Photo classification failed "
-                    f"for photo {photo.id} "
-                    f"(attempt {attempt + 1}/3): "
-                    f"{error_message}"
+                    f"Classification failed for photo "
+                    f"{photo.id}: {error_message}"
                 )
 
-                temporary_error = any(
+                is_rate_limit = (
+                    "429" in error_message
+                    or "RESOURCE_EXHAUSTED" in error_message
+                )
+
+                is_per_minute_limit = (
+                    "per minute" in error_message.lower()
+                    or "retry in" in error_message.lower()
+                )
+
+                if is_rate_limit and is_per_minute_limit:
+                    if attempt < 2:
+                        print(
+                            "Gemini rate limit reached. "
+                            "Waiting 60 seconds before retry..."
+                        )
+                        time.sleep(60)
+                        continue
+
+                    # This photo failed after retries.
+                    # Stop the batch to avoid repeated API errors.
+                    stopped_by_quota = True
+                    break
+
+                if is_rate_limit:
+                    # Could be a daily or other exhausted quota.
+                    stopped_by_quota = True
+                    break
+
+                # Retry temporary server errors only.
+                is_temporary_error = any(
                     code in error_message
                     for code in [
-                        "503",
                         "500",
                         "502",
+                        "503",
                         "504",
                         "UNAVAILABLE",
                     ]
                 )
 
-                quota_error = any(
-                    code in error_message
-                    for code in [
-                        "429",
-                        "RESOURCE_EXHAUSTED",
-                        "quota exceeded",
-                        "Quota exceeded",
-                    ]
-                )
+                if is_temporary_error and attempt < 2:
+                    time.sleep(5 * (attempt + 1))
+                    continue
 
-                if quota_error:
-                    print(
-                        "Gemini API quota exceeded. "
-                        "Stopping classification."
-                    )
-                    break
+                break
 
-                if temporary_error and attempt < 2:
-                    wait_time = 5 * (attempt + 1)
-                    time.sleep(wait_time)
-                else:
-                    break
+        if success:
+            continue
 
-                if temporary_error and attempt < 2:
+        failed_count += 1
 
-                    wait_time = 5 * (attempt + 1)
-
-                    print(
-                        f"Retrying photo {photo.id} "
-                        f"in {wait_time} seconds..."
-                    )
-
-                    time.sleep(wait_time)
-
-                else:
-
-                    break
-
-        if not success:
-            failed_count += 1
+        if stopped_by_quota:
+            print(
+                "Stopping remaining photos because "
+                "Gemini API quota/rate limit was reached."
+            )
+            break
 
     return {
-        "photos_processed": len(photos),
+        "photos_processed": classified_count + failed_count,
         "classified_count": classified_count,
         "failed_count": failed_count,
+        "stopped_by_quota": stopped_by_quota,
     }

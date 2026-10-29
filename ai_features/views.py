@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.shortcuts import redirect
-
+from ai_features.models import PhotoClassification
 from .services import classify_folder_photos
 from pizxifyapp.models import (
     PhotoFolder,
@@ -306,8 +306,6 @@ def face_group_photos(request, folder_id, group_id):
         context
     )
 
-
-
 @require_POST
 def classify_folder_photos_api(request, folder_id):
 
@@ -322,7 +320,12 @@ def classify_folder_photos_api(request, folder_id):
             user_id=user_id
         )
 
-        if result["classified_count"] > 0:
+        # All photos are already classified
+        if result.get("message") == "All photos are already classified.":
+            pass
+
+        # At least one photo classified successfully
+        elif result.get("classified_count", 0) > 0:
             messages.success(
                 request,
                 (
@@ -332,11 +335,13 @@ def classify_folder_photos_api(request, folder_id):
                     f"Failed: {result['failed_count']}"
                 )
             )
-        else:
-            messages.warning(
+
+        # Some photos failed, and none succeeded
+        elif result.get("failed_count", 0) > 0:
+            messages.error(
                 request,
-                "AI Photo Classification could not be completed. "
-                "Please check your Gemini API quota."
+                "AI photo classification failed. "
+                "Please check the error logs or Gemini API quota."
             )
 
     except ValueError as e:

@@ -247,4 +247,30 @@ document.addEventListener('DOMContentLoaded', function () {
         );
     }
 
+    /* ---- Auto-dismiss Alerts / Messages after 5 seconds ---- */
+    const alerts = document.querySelectorAll('.alert');
+    if (alerts.length) {
+        setTimeout(() => {
+            alerts.forEach(alert => {
+                try {
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Alert) {
+                        const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                        if (bsAlert) {
+                            bsAlert.close();
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    // fallback
+                }
+                alert.classList.remove('show');
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                }, 300);
+            });
+        }, 5000);
+    }
+
 });

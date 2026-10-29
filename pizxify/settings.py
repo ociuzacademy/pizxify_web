@@ -65,7 +65,7 @@ ROOT_URLCONF = 'pizxify.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -146,4 +146,4 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-print("GEMINI_API_KEY:", GEMINI_API_KEY)
+# print("GEMINI_API_KEY:", GEMINI_API_KEY)
